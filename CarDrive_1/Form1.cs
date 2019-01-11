@@ -17,6 +17,7 @@ namespace CarDrive_1
             InitializeComponent();
             //cardrive
             //수정판
+            //김민지 수정
         }
     }
 }
