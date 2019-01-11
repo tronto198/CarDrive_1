@@ -15,14 +15,12 @@ namespace CarDrive_1
         public Form1()
         {
             InitializeComponent();
-            //cardrive
-            //수정판
-            //김민지 수정
+            Start();
+        }
 
-            //김민지 동시 수정
-
-            //신형준 2차수정 짠짠
-
+        public static void Start()
+        {
+            MessageBox.Show("시작했어요!!");
         }
     }
 }
