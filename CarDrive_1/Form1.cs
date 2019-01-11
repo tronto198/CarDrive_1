@@ -18,6 +18,7 @@ namespace CarDrive_1
             //cardrive
             //수정판
             //김민지 수정
+            //김민지 동시 수정
         }
     }
 }
