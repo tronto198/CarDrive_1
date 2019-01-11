@@ -16,6 +16,7 @@ namespace CarDrive_1
         {
             InitializeComponent();
             //cardrive
+            //수정판
         }
     }
 }
