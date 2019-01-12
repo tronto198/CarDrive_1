@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 
-namespace Paper_io_Client
+namespace WinFormlib
 {
-    class DoubleBuffering
+    public class DoubleBuffering
     {
-        public static DoubleBuffering oInstance = null;
+        private static DoubleBuffering oInstance = null;
         private BufferedGraphics g;
 
         public Graphics getGraphics { get { return g.Graphics; } }
@@ -20,6 +20,49 @@ namespace Paper_io_Client
         private DoubleBuffering(BufferedGraphics graphics)
         {
             g = graphics;
+        }
+
+        public static void setInstance(System.Windows.Forms.Form form)
+        {
+            Graphics gg = form.CreateGraphics();
+            DoubleBuffering.Instance(BufferedGraphicsManager.Current.Allocate(gg, form.ClientRectangle));
+            gg.Dispose();
+
+            void Render()
+            {
+                try
+                {
+                    DoubleBuffering.Work();
+
+                    form.Invoke(new Action(delegate ()
+                    {
+                        try
+                        {
+                            Graphics g = form.CreateGraphics();
+                            DoubleBuffering.Instance().getBuffered.Render(g);
+                            g.Dispose();
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+                    }));
+
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            Threading_Timer thread_FrameRender = new Threading_Timer();
+            thread_FrameRender.setCallback(new Action(delegate () {
+                //callback_Draw();
+                Render();
+            }));
+            thread_FrameRender.setInterval(8);
+            thread_FrameRender.Start();
+            
         }
 
         public static DoubleBuffering Instance(BufferedGraphics graphics)

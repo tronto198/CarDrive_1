@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Paper_io_Client
+namespace WinFormlib
 {
     /*
      * Form.Designer.cs에 복붙하고 시작    또는    밑의 binding 실행
@@ -19,44 +19,71 @@ namespace Paper_io_Client
         this.MouseUp += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_up);
 
     */
-    class Form_input
+    public class Form_input
     {
-        public static void binding(Form form)
-        {
+        bool bind = false;
 
-            form.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(Key_input.Key_Preview);
-            form.KeyDown += new System.Windows.Forms.KeyEventHandler(Key_input.Key_down);
-            form.KeyUp += new System.Windows.Forms.KeyEventHandler(Key_input.Key_up);
-            form.MouseDown += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_down);
-            form.MouseMove += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_move);
-            form.MouseUp += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_up);
+        public Mouse_input Mouse_input = new Mouse_input();
+        public Key_input Key_input = new Key_input();
+
+
+        public void binding(Form form)
+        {
+            if (bind)
+            {
+                throw new Exception("이미 바인딩되었습니다.");
+            }
+            else
+            {
+                form.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(Key_input.Key_Preview);
+                form.KeyDown += new System.Windows.Forms.KeyEventHandler(Key_input.Key_down);
+                form.KeyUp += new System.Windows.Forms.KeyEventHandler(Key_input.Key_up);
+                form.MouseDown += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_down);
+                form.MouseMove += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_move);
+                form.MouseUp += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_up);
+            }
+            bind = true;
         }
     }
     
-    static class Mouse_input
+    public class Mouse_input
     {
-        static bool Drag = false;
-        static Point first_click = new Point();
-        static Rectangle rectangle = new Rectangle();
-        static Point Mouse_point = new Point();
+        static Mouse_input oInstance = null;
 
-        static Brush thisbrush = null;
+        bool Drag = false;
+        Point first_click = new Point();
+        Rectangle rectangle = new Rectangle();
+        Point Mouse_point = new Point();
 
-        static Pen greenpen = new Pen(Color.Green, 0.02f);
+        Brush thisbrush = new SolidBrush(Color.FromArgb(50, Color.LightGreen));
+
+        Pen greenpen = new Pen(Color.Green, 0.02f);
 
 
-        public static bool Draw { get; set; }
+        public bool Draw { get; set; }
 
-        static Mouse_input()
+        public static Mouse_input getinstance()
         {
-            thisbrush = new SolidBrush(Color.FromArgb(50, Color.LightGreen));
-            Draw = true;
+            if(oInstance == null)
+            {
+                throw new Exception("Form_input.binding() 필요");
+            }
+            else
+            {
+                return oInstance;
+            }
         }
 
-        public static bool Dragging { get { return Drag; } }
-        public static Point point { get { return Mouse_point; } }
+        internal Mouse_input()
+        {
+            oInstance = this;
+            //Draw = true;
+        }
 
-        public static void Mouse_down(object sender, MouseEventArgs e)
+        public bool Dragging { get { return Drag; } }
+        public Point point { get { return Mouse_point; } }
+
+        public void Mouse_down(object sender, MouseEventArgs e)
         {
             rectangle.Location = e.Location;
             first_click = e.Location;
@@ -70,7 +97,7 @@ namespace Paper_io_Client
             }
 
         }
-        public static void Mouse_up(object sender, MouseEventArgs e)
+        public void Mouse_up(object sender, MouseEventArgs e)
         {
             if (Drag)
             {
@@ -79,7 +106,7 @@ namespace Paper_io_Client
                     Drag = false;
             }
         }
-        public static void Mouse_move(object sender, MouseEventArgs e)
+        public void Mouse_move(object sender, MouseEventArgs e)
         {
             Mouse_point = e.Location;
             if (Drag)
@@ -109,7 +136,7 @@ namespace Paper_io_Client
             }
         }
 
-        private static void Drawing()
+        private void Drawing()
         {
             DoubleBuffering.Instance().getGraphics.FillRectangle(thisbrush, rectangle);
             DoubleBuffering.Instance().getGraphics.DrawRectangle(greenpen, rectangle);
@@ -117,29 +144,47 @@ namespace Paper_io_Client
     }
 
 
-    static class Key_input
+    public class Key_input
     {
-        private static bool Shift = false;
+        static Key_input oInstance = null;
 
-        private static bool Up = false;
-        private static bool Down = false;
-        private static bool Left = false;
-        private static bool Right = false;
-        private static bool Space = false;
+        private bool Shift = false;
+
+        private bool Up = false;
+        private bool Down = false;
+        private bool Left = false;
+        private bool Right = false;
+        private bool Space = false;
 
 
-        public static bool get_shift { get { return Shift; } }
+        public bool get_shift { get { return Shift; } }
 
-        public static bool get_up { get { return Up; } }
-        public static bool get_down { get { return Down; } }
-        public static bool get_left { get { return Left; } }
-        public static bool get_right { get { return Right; } }
-        public static bool get_space { get { return Space; } }
+        public bool get_up { get { return Up; } }
+        public bool get_down { get { return Down; } }
+        public bool get_left { get { return Left; } }
+        public bool get_right { get { return Right; } }
+        public bool get_space { get { return Space; } }
 
         public delegate void key_down(Keys keys);
         public static event key_down Key_in;
 
-        public static void Key_Preview(object sender, PreviewKeyDownEventArgs e)
+        public static Key_input getinstance()
+        {
+            if(oInstance == null)
+            {
+                throw new Exception("Form_input.binding() 필요");
+            }
+            else
+            {
+                return oInstance;
+            }
+        }
+
+        internal Key_input() {
+            oInstance = this;
+        }
+
+        public void Key_Preview(object sender, PreviewKeyDownEventArgs e)
         {
             switch (e.KeyCode)
             {
@@ -152,7 +197,7 @@ namespace Paper_io_Client
             }
         }
 
-        public static void Key_down(object sender, KeyEventArgs e)
+        public void Key_down(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
@@ -189,7 +234,7 @@ namespace Paper_io_Client
 
         }
 
-        public static void Key_up(object sender, KeyEventArgs e)
+        public void Key_up(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {

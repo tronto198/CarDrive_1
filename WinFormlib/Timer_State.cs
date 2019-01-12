@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace SharedLibaray
+namespace WinFormlib
 {
     public class Timer_State
     {

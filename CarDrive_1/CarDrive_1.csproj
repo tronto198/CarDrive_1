@@ -79,5 +79,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinFormlib\WinFormlib.csproj">
+      <Project>{44657317-1196-4243-9a15-5a7c0acc0f48}</Project>
+      <Name>WinFormlib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
