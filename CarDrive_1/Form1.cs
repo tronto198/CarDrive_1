@@ -45,7 +45,7 @@ namespace CarDrive_1
             test_timer.interval = 100; 
             test_timer.setCallback(timercallback);
             test_timer.Start();
-            //1초 간격으로 timercallback 함수 실행
+            //0.1초 간격으로 timercallback 함수 실행
 
         }
 
