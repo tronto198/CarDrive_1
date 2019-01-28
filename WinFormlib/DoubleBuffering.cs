@@ -15,31 +15,32 @@ namespace WinFormlib
         public Graphics getGraphics { get { return g.Graphics; } }
         public BufferedGraphics getBuffered { get { return g; } }
         public delegate void ClearEventHandler();
-        public static ClearEventHandler callback_work = null;
+        public ClearEventHandler callback_work = null;
 
-        private DoubleBuffering(BufferedGraphics graphics)
+        private DoubleBuffering()
         {
-            g = graphics;
+            //BufferedGraphics graphics
+            //g = graphics;
         }
 
-        public static void setInstance(System.Windows.Forms.Form form)
+        public void setInstance(System.Windows.Forms.Form form)
         {
             Graphics gg = form.CreateGraphics();
-            DoubleBuffering.Instance(BufferedGraphicsManager.Current.Allocate(gg, form.ClientRectangle));
+            g = BufferedGraphicsManager.Current.Allocate(gg, form.ClientRectangle);
             gg.Dispose();
 
             void Render()
             {
                 try
                 {
-                    DoubleBuffering.Work();
+                    Work();
 
                     form.Invoke(new Action(delegate ()
                     {
                         try
                         {
                             Graphics g = form.CreateGraphics();
-                            DoubleBuffering.Instance().getBuffered.Render(g);
+                            DoubleBuffering.getinstance().getBuffered.Render(g);
                             g.Dispose();
                         }
                         catch (Exception e)
@@ -65,27 +66,13 @@ namespace WinFormlib
             
         }
 
-        public static DoubleBuffering Instance(BufferedGraphics graphics)
-        {
-            if (oInstance == null)
-            {
-                oInstance = new DoubleBuffering(graphics);
-            }
-            else
-            {
-                oInstance = null;
-                oInstance = new DoubleBuffering(graphics);
-            }
-            return oInstance;
-        }
-
-        public static DoubleBuffering Instance()
+        public static DoubleBuffering getinstance()
         {
             try
             {
                 if (oInstance == null)
                 {
-                    throw (new Exception("instance 선언이 되지 않았습니다."));
+                    oInstance = new DoubleBuffering();
                 }
                 return oInstance;
             }
@@ -95,7 +82,7 @@ namespace WinFormlib
             }
         }
 
-        public static void Work()
+        public void Work()
         {
             if(callback_work != null)
             {

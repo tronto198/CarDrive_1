@@ -67,15 +67,15 @@ namespace WinFormlib
             if (!Stopping)
             {
                 Stop();
-                e.Cancel = true;
+                //e.Cancel = true;
             }
         }
 
         public void Stop()
         {
             Stopping = true;
-            Thread th = new Thread(delegate ()
-            {
+            //Thread th = new Thread(delegate ()
+            //{
                 List<myThread> p_list = new List<myThread>();
                 for (int i = 0; i < list.Count(); i++)
                 {
@@ -90,8 +90,9 @@ namespace WinFormlib
                 {
                     callback_TimerAllStopped();
                 }
-            });
-            th.Start();
+
+            //});
+            //th.Start();
         }
     }
 

@@ -23,24 +23,28 @@ namespace WinFormlib
     {
         bool bind = false;
 
-        public Mouse_input Mouse_input = new Mouse_input();
-        public Key_input Key_input = new Key_input();
+        public static Mouse_input Mouse_input = null;
+        public static Key_input Key_input = null;
 
 
         public void binding(Form form)
         {
+            
             if (bind)
             {
                 throw new Exception("이미 바인딩되었습니다.");
             }
             else
             {
+                Mouse_input = new Mouse_input();
+                Key_input = new Key_input();
                 form.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(Key_input.Key_Preview);
                 form.KeyDown += new System.Windows.Forms.KeyEventHandler(Key_input.Key_down);
                 form.KeyUp += new System.Windows.Forms.KeyEventHandler(Key_input.Key_up);
                 form.MouseDown += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_down);
                 form.MouseMove += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_move);
                 form.MouseUp += new System.Windows.Forms.MouseEventHandler(Mouse_input.Mouse_up);
+                
             }
             bind = true;
         }
@@ -138,8 +142,8 @@ namespace WinFormlib
 
         private void Drawing()
         {
-            DoubleBuffering.Instance().getGraphics.FillRectangle(thisbrush, rectangle);
-            DoubleBuffering.Instance().getGraphics.DrawRectangle(greenpen, rectangle);
+            DoubleBuffering.getinstance().getGraphics.FillRectangle(thisbrush, rectangle);
+            DoubleBuffering.getinstance().getGraphics.DrawRectangle(greenpen, rectangle);
         }
     }
 
