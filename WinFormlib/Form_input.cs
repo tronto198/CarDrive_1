@@ -26,7 +26,10 @@ namespace WinFormlib
         public static Mouse_input Mouse_input = null;
         public static Key_input Key_input = null;
 
-
+        /// <summary>
+        /// 윈폼의 마우스와 키보드 인풋에 이 클래스들 연결
+        /// </summary>
+        /// <param name="form">연결할 윈폼 지정</param>
         public void binding(Form form)
         {
             
@@ -52,6 +55,9 @@ namespace WinFormlib
     
     public class Mouse_input
     {
+        //이것저것 실험하느라 쓸데없는 것들이 많으니 생략
+        //드래그로 박스 만드는 기능이 있지만 일단 꺼져있음
+        //아마 이 프로젝트에선 안쓰지 않을까..?
         static Mouse_input oInstance = null;
 
         bool Drag = false;
@@ -169,6 +175,8 @@ namespace WinFormlib
         public bool get_right { get { return Right; } }
         public bool get_space { get { return Space; } }
 
+        //키보드로 입력이 들어가면 Key_in 이벤트 발생
+        //이 이벤트에 연결하여 키보드입력을 받을 수 있음
         public delegate void key_down(Keys keys);
         public static event key_down Key_in;
 
@@ -188,6 +196,7 @@ namespace WinFormlib
             oInstance = this;
         }
 
+        //가끔씩 화살표 버튼들이 입력으로 안되는 경우가 있어서 이게 필요
         public void Key_Preview(object sender, PreviewKeyDownEventArgs e)
         {
             switch (e.KeyCode)

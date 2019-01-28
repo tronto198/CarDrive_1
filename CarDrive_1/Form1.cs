@@ -17,15 +17,17 @@ namespace CarDrive_1
         WinFormlib.Timer_State Timer_State = null;
         WinFormlib.Form_input Form_input = null;
 
+        int testint = 1;
+
         public Form1()
         {
             InitializeComponent();
             
-            Start();
+            Setting();
             
         }
 
-        public void Start()
+        public void Setting()
         {
             Timer_State = WinFormlib.Timer_State.getinstance(this);
             DoubleBuffering = WinFormlib.DoubleBuffering.getinstance();
@@ -34,11 +36,40 @@ namespace CarDrive_1
             Form_input.binding(this);
             MessageBox.Show("시작했어요!!");
             DoubleBuffering.callback_work += GraphicEvent;
+            
+            //이런식으로 그리기 함수 연결 가능
+            DoubleBuffering.callback_work += testevent;
+
+            //이런식으로 스레드형 타이머 설정 가능
+            WinFormlib.Threading_Timer test_timer = new WinFormlib.Threading_Timer();
+            test_timer.interval = 100; 
+            test_timer.setCallback(timercallback);
+            test_timer.Start();
+            //1초 간격으로 timercallback 함수 실행
+
         }
 
         public void GraphicEvent()
         {
+            //여기는 화면에 그려진 것들을 지우는 곳
+            //이 함수가 실행된 후에 그려야 제대로 화면에 나옴
             DoubleBuffering.getGraphics.Clear(Color.LightBlue);
+        }
+
+        public void testevent()
+        {
+            //이런식으로 다양한 Draw가능
+            Font thisfont = new Font("AR CENA", 10);
+            Brush thisBrush = new SolidBrush(Color.Black);
+            
+            DoubleBuffering.getGraphics.DrawEllipse(new Pen(thisBrush), new Rectangle(50, 50, 400, 250));
+            DoubleBuffering.getGraphics.DrawString(testint + "", thisfont, thisBrush, 50, 50);
+        }
+
+        public void timercallback()
+        {
+            if (testint++ % 10000 == 0)
+                testint -= 5000;
         }
     }
 }

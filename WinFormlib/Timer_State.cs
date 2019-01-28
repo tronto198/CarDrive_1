@@ -36,6 +36,12 @@ namespace WinFormlib
             return instance;
         }
 
+        /// <summary>
+        /// 윈폼과 이 클래스를 연결, 연결하면 윈폼이 종료될때
+        /// 이 클래스에 저장된 모든 스레드들을 먼저 종료 후 윈폼 종료
+        /// </summary>
+        /// <param name="form">연결할 윈폼</param>
+        /// <returns></returns>
         public static Timer_State getinstance(System.Windows.Forms.Form form)
         {
             if (instance == null)
@@ -46,11 +52,11 @@ namespace WinFormlib
             return instance;
         }
 
-        public void Add(myThread item)
+        internal void Add(myThread item)
         {
             list.Add(item);
         }
-        public void Remove(myThread item)
+        internal void Remove(myThread item)
         {
             list.Remove(item);
         }
@@ -96,6 +102,7 @@ namespace WinFormlib
         }
     }
 
+    //분리해보려다가 실패 이건 아마 안쓰겠지..
     public class myThread
     {
         private static Timer_State Timer_State = Timer_State.getinstance();
@@ -124,12 +131,18 @@ namespace WinFormlib
 
     public class Threading_Timer : myThread
     {
-
+        /// <summary>
+        /// 콜백이 실행되기까지 기다리는 시간(ms)
+        /// </summary>
         public int interval = 10;
         
         private Action action = null;
         Timer timer = null;
 
+        /// <summary>
+        /// 타이머가 만료될때마다 실행되는 함수 지정
+        /// </summary>
+        /// <param name="target">함수</param>
         public void setCallback(Action target) 
         {
             action = target;
@@ -138,6 +151,7 @@ namespace WinFormlib
         {
             this.interval = peried;
         }
+
         public void Start()
         {
             timer = new Timer(Task, action, 100, interval);
