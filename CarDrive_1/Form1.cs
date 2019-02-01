@@ -24,7 +24,8 @@ namespace CarDrive_1
             InitializeComponent();
             
             Setting();
-            
+
+            makeCar();
         }
 
         public void Setting()
@@ -47,6 +48,15 @@ namespace CarDrive_1
             test_timer.Start();
             //0.1초 간격으로 timercallback 함수 실행
 
+
+
+
+        }
+
+        public void makeCar()
+        {
+            Car car = new Car();
+            car.Start();
         }
 
         public void GraphicEvent()
