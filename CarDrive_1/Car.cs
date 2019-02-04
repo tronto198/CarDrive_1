@@ -40,9 +40,10 @@ namespace CarDrive_1
     {
         double accel = 0.5;
         double velocity = 0.0;
-        double degree = 0;
+        double degree = 60;
         Threading_Timer timer = new Threading_Timer();
-        Rectangle car = new Rectangle();
+        //Rectangle car = new Rectangle();
+        int x = 0, y = 100;
         DoubleBuffering d = null;
 
         Image img = Image.FromFile("car.png");
@@ -57,10 +58,7 @@ namespace CarDrive_1
         /// </param>
         public void Start()
         {
-            bitmap = new Bitmap(img);
-            car.Size = new Size(30, 20);
-            car.X = 0;
-            car.Y = 100;
+            
             timer.setInterval(100);
             timer.setCallback(go);
             timer.Start();
@@ -69,8 +67,9 @@ namespace CarDrive_1
             //velocity = velocity_0 + accel * duration;
 
 
-            Matrix mat = new Matrix();
-            center = new Point();
+            center = new Point((int)(img.Width / 2),(int)(img.Height / 2));
+
+            bitmap = new Bitmap(img);
         }
         
         public void go()
@@ -85,8 +84,7 @@ namespace CarDrive_1
                 velocity += accel;
             }
             
-
-            car.X += (int)velocity;
+            x += (int)velocity;
 
             //---> 
             //30도 속도 x = cos(30)*velocity y = sin(30)* v
@@ -97,11 +95,17 @@ namespace CarDrive_1
             Brush brush = new SolidBrush(Color.Black);
             Pen pen = new Pen(brush);
 
-            d.getGraphics.DrawImage(bitmap, car);
-            
-        }
+            //Bitmap b = RotateImage(img, center, (float)degree);
 
+            Graphics g = d.getGraphics;
+            g.TranslateTransform(x + center.X, y + center.Y);
+            g.RotateTransform((float)degree);
+            //g.TranslateTransform(-(x + center.X), -(y + center.Y));
+            d.getGraphics.DrawImage(img, -center.X, -center.Y);
+            g.ResetTransform();
+        }
         
+
         //방향키 입력으로 위치이동
         public void Key(string[] args)
         {
