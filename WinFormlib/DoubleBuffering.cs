@@ -25,7 +25,7 @@ namespace WinFormlib
         public BufferedGraphics getBuffered { get { return g; } }
 
         /// <summary>
-        /// callback_work에 메서드를 연결
+        /// callback_work에 메서드를 연결하여 사용, 타이머에 설정된 interval이 지날 때마다 callback_work 이벤트가 발생
         /// </summary>
         public delegate void ClearEventHandler();
         public ClearEventHandler callback_work = null;
