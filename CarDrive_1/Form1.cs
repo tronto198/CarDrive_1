@@ -16,6 +16,7 @@ namespace CarDrive_1
         WinFormlib.DoubleBuffering DoubleBuffering = null;
         WinFormlib.Timer_State Timer_State = null;
         WinFormlib.Form_input Form_input = null;
+        Pen thispen = new Pen(new SolidBrush(Color.Black));
 
         int testint = 1;
 
@@ -26,6 +27,8 @@ namespace CarDrive_1
             Setting();
 
             makeCar();
+
+            test();
         }
 
         public void Setting()
@@ -58,6 +61,17 @@ namespace CarDrive_1
             Car car = new Car();
             car.Start();
         }
+
+        public void test()
+        {
+            void drawing()
+            {
+                DoubleBuffering.getGraphics.DrawArc(thispen, new Rectangle(100, 100, 500, 500), 180, 180);
+            }
+
+            DoubleBuffering.callback_work += drawing;
+        }
+
 
         public void GraphicEvent()
         {
