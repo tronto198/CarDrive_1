@@ -147,6 +147,11 @@ namespace WinFormlib
         {
             action = target;
         }
+
+        /// <summary>
+        /// 타이머의 간격 설정
+        /// </summary>
+        /// <param name="peried">밀리초 단위로 설정</param>
         public void setInterval(int peried)
         {
             this.interval = peried;
@@ -174,6 +179,7 @@ namespace WinFormlib
 
             base.Stop();
         }
+        
 
     }
     
