@@ -18,7 +18,6 @@ namespace CarDrive_1
         WinFormlib.Form_input Form_input = null;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
 
-        int testint = 1;
 
         public Form1()
         {
@@ -55,15 +54,6 @@ namespace CarDrive_1
         
         public void makeMap()
         {
-            /*
-            void drawing()
-            {
-                DoubleBuffering.getGraphics.DrawArc(thispen, new Rectangle(50, 50, 400, 400), 90, 180);
-            }
-
-            DoubleBuffering.callback_work += drawing;
-            */
-
             //맵 만드는 곳
             Map Map = new Map();
             Map.set(600, 300, 400, 250);
@@ -80,6 +70,10 @@ namespace CarDrive_1
 
 
 
+
+
+        int testint = 1;
+
         void ShowHelp()
         {
             //메세지 박스 사용 가능 (mbox 치고 탭탭 하면 자동, 위에 using System.Windows.Form 해야 가능)
@@ -95,8 +89,7 @@ namespace CarDrive_1
             test_timer.Start();                             //타이머 시작
             //0.1초 간격으로 timercallback 함수 실행
         }
-
-
+        
         public void ShowDraw()
         {
             //이런식으로 다양한 Draw가능

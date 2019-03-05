@@ -11,18 +11,18 @@ namespace CarDrive_1
     class Map
     {
         ///해야할것들
-        ///맵 크기 정하고 그에 맞게 트랙 생성
-        ///트랙에 따라서 차와 충돌되는지 계산
+        ///맵 크기 정하고 그에 맞게 트랙 생성 o
+        ///트랙에 따라서 차와 충돌되는지 계산 o
         ///트랙을 따라서 세이브 포인트를 만들고 이 역시 충돌계산
         ///트랙, 세이브 포인트에 충돌될때 각각 실행되는 함수 생성
-        ///원점은 맵 가운데
-        ///왼쪽 위 구석에 반복수 표시
+        ///원점은 맵 가운데 o
+        ///왼쪽 위 구석에 반복수 표시?
         ///차를 여기에 넣을까? 차는 스레드로 한꺼번에 돌려야하나?
-        ///타원말고 운동장 트랙처럼으로 변경  그럼 양끝은 원형으로, 위아래는 선으로 가능
+        ///타원말고 운동장 트랙처럼으로 변경  그럼 양끝은 원형으로, 위아래는 선으로 가능 o
 
         int x, y;
         int TrackWidth, TrackHeight;
-        int TrackSize = 100;
+        const int TrackSize = 100;
         DoubleBuffering Screen;
         Line CenterLine;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
@@ -129,32 +129,44 @@ namespace CarDrive_1
                 //점의 위치에 따라 기준을 다르게 잡음
                 if(p.X < CenterLine.point1.X)  //왼쪽 곡선 라인일때
                 {
-                    double length = m.getLength(p, CenterLine.point1);
+                    double length = m.getLength(p, CenterLine.point1);  //왼쪽 CenterLine 끝점과의 거리
 
                     return CatchCrash(length);
                 }
                 else if (CenterLine.point2.X < p.X) //오른쪽 곡선 라인일때
                 {
-                    double length = m.getLength(p, CenterLine.point2);
+                    double length = m.getLength(p, CenterLine.point2);  //오른쪽 CenterLine 끝점과의 거리
 
                     return CatchCrash(length);
                 }
                 else //직선 라인일때
                 {
-                    int abs = Math.Abs(p.Y - y);
+                    int abs = Math.Abs(p.Y - y);  //CenterLine과 점과의 거리
                     return CatchCrash(abs);
                 }
 
             }
 
+            //차가 세이브 포인트를 넘겼는지 판별 차의 왼쪽 앞점, 차의 오른쪽 앞점
+            //bool checkBonus(Point Lp, Point Rp)
+            {
 
+            }
 
-
+            //checkCrash 4번, 보너스 한번 실행
 
 
         }
 
+        void Crashed(Car car)
+        {
+            //차에 함수 만들기
+        }
 
+        void Bonus(Car car)
+        {
+            //차에 함수 만들기
+        }
 
 
     }
@@ -221,11 +233,12 @@ namespace CarDrive_1
         /// <returns></returns>
         public double getLength()
         {
-            length = Math.Sqrt(((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));
+            length = m.getLength(p1, p2);
             return length;
         }
     }
 
+    //길이 구하는거 많이 써서 따로 만들어버림
     public static class m
     {
         public static double getLength(Point p1, Point p2)
