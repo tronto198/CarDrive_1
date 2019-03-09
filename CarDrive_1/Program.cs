@@ -15,17 +15,33 @@ namespace CarDrive_1
         //[STAThread]
         public static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            //Application.Run(new Form1());
+            ExMain();
         }
 
-        public static void ExMain()
+        public static Form1 ExMain()
         {
-            Thread t = new Thread(Main);
+            //ApplicationSetting();
+            Form1 form = null;
+            bool b = true;
+            Thread t = new Thread(delegate (){
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                form = new Form1();
+                b = false;
+                Application.Run(form);
+            });
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
-            t.Join();
+
+            while (b);
+            return form;
+        }
+
+        public static void ApplicationSetting()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
         }
     }
 }

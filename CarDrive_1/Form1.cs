@@ -68,6 +68,15 @@ namespace CarDrive_1
             Screen.getGraphics.Clear(Color.LightBlue);
         }
 
+        public void Ringing(string str)
+        {
+            this.Invoke(new Action(delegate ()
+            {
+                MessageBox.Show(str);
+
+            }));
+        }
+        
 
 
 
