@@ -38,13 +38,18 @@ namespace CarDrive_1
     }
     class Car
     {
-        double accel = 0.15;
+        const double accel = 0.12;
+        const double max_velocity = 85.5;
         double velocity = 0.0;
+        const double stop_friction = 0.1;
+        const double run_friction = 0.05;
         double degree = 90;
-        double turn = 3;
+        const double turn = 3;
+
+        const double to_radian = Math.PI / 180;
         //Threading_Timer timer = new Threading_Timer();
         //Rectangle car = new Rectangle();
-        int x = 0, y = 100;
+        double x = 0, y = 100;
         DoubleBuffering d = null;
 
         Image img = Image.FromFile("car.png");
@@ -76,11 +81,37 @@ namespace CarDrive_1
         
         public void go()
         {
-            int v_x = 0;
-            int v_y = 0;
+            if (velocity > 0)
+            {
+                velocity -= run_friction;
+                if (velocity < 0)
+                {
+                    velocity = 0;
+                }
+                else if(velocity > max_velocity)
+                {
+                    velocity = max_velocity;
+                }
+            }
+            else
+            {
+                velocity += run_friction;
+                if (velocity > 0)
+                {
+                    velocity = 0;
+                }
+                else if(velocity < -max_velocity)
+                {
+                    velocity = -max_velocity;
+                }
+            }
+            
 
-            v_y = (int)(Math.Cos(degree) * velocity);
-            v_x = (int)(Math.Sin(degree) * velocity);
+            double v_x = 0;
+            double v_y = 0;
+
+            v_y = (Math.Cos(degree * to_radian) * velocity);
+            v_x = (Math.Sin(degree * to_radian) * velocity);
 
             x += v_x;
             y -= v_y;
@@ -94,7 +125,7 @@ namespace CarDrive_1
             //Bitmap b = RotateImage(img, center, (float)degree);
 
             Graphics g = d.getGraphics;
-            g.TranslateTransform(x + center.X, y + center.Y);
+            g.TranslateTransform((float)x + center.X, (float)y + center.Y);
             g.RotateTransform((float)degree);
             //g.TranslateTransform(-(x + center.X), -(y + center.Y));
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
@@ -109,6 +140,7 @@ namespace CarDrive_1
             /// 
             void acceling(bool front)
             {
+
                 if (front)
                     velocity += accel;
                 else

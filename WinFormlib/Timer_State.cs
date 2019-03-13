@@ -237,7 +237,7 @@ namespace WinFormlib
             while (!Timer_State.getinstance().Stopping)
             {
                 ThreadPool.QueueUserWorkItem(WC);
-                Thread.SpinWait(interval);
+                Thread.Sleep(interval);
             }
         }
 
