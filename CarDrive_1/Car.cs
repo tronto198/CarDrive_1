@@ -16,7 +16,6 @@ namespace CarDrive_1
         {
             var autoEvent = new AutoResetEvent(false);
             var statusChecker = new StatusChecker(10);
-
             var stateTimer = new Timer(statusChecker.CheckStatus, autoEvent, 1000, 250);
 
         }
@@ -44,7 +43,7 @@ namespace CarDrive_1
         double turn_max_velocity = 2;
         const double stop_friction = 0.1;
         const double run_friction = 0.05;
-        double degree = 90;
+        double degree = 0;
         const double turn = 3;
 
         const double to_radian = Math.PI / 180;
@@ -54,7 +53,6 @@ namespace CarDrive_1
         DoubleBuffering d = null;
 
         Image img = Image.FromFile("car.png");
-
         Bitmap bitmap = null;
         Point center;
 
@@ -126,7 +124,11 @@ namespace CarDrive_1
             //Bitmap b = RotateImage(img, center, (float)degree);
 
             Graphics g = d.getGraphics;
+
+            //회전했을때 좌표
+
             g.TranslateTransform((float)x + center.X, (float)y + center.Y);
+
             g.RotateTransform((float)degree);
             //g.TranslateTransform(-(x + center.X), -(y + center.Y));
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
@@ -187,6 +189,11 @@ namespace CarDrive_1
             }
 
             go();
+        }
+
+        public void car_vertex()//차의 네개의 꼭짓점
+        {
+
         }
 
         //방향키 입력으로 위치이동
