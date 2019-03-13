@@ -10,7 +10,7 @@ namespace CarDrive_1
     {
         Map map = null;
         List<Car> Carlist = null;
-        WinFormlib.Threading_Timer worker;
+        WinFormlib.Threading_Timer_v0 worker;
 
         public MainProgram()
         {
@@ -47,7 +47,7 @@ namespace CarDrive_1
         public void bindKey()
         {
             Set();
-            worker = new WinFormlib.Threading_Timer();
+            worker = new WinFormlib.Threading_Timer_v0();
             worker.setInterval(10);
             worker.setCallback(reactKey);
             worker.Start();

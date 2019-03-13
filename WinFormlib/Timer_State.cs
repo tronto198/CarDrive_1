@@ -18,7 +18,7 @@ namespace WinFormlib
         private List<myThread> list;
 
         public bool Stopping = false;
-        
+
 
         private Timer_State()
         {
@@ -28,7 +28,7 @@ namespace WinFormlib
 
         public static Timer_State getinstance()
         {
-            if(instance == null)
+            if (instance == null)
             {
                 instance = new Timer_State();
             }
@@ -82,20 +82,20 @@ namespace WinFormlib
             Stopping = true;
             //Thread th = new Thread(delegate ()
             //{
-                List<myThread> p_list = new List<myThread>();
-                for (int i = 0; i < list.Count(); i++)
-                {
-                    p_list.Add(list[i]);
-                }
-                foreach (Threading_Timer i in p_list)
-                {
-                    i.Stop();
-                }
+            List<myThread> p_list = new List<myThread>();
+            for (int i = 0; i < list.Count(); i++)
+            {
+                p_list.Add(list[i]);
+            }
+            foreach (myThread i in p_list)
+            {
+                i.Stop();
+            }
 
-                if (callback_TimerAllStopped != null)
-                {
-                    callback_TimerAllStopped();
-                }
+            if (callback_TimerAllStopped != null)
+            {
+                callback_TimerAllStopped();
+            }
 
             //});
             //th.Start();
@@ -103,7 +103,7 @@ namespace WinFormlib
     }
 
     //분리해보려다가 실패 이건 아마 안쓰겠지..
-    public class myThread
+    public abstract class myThread
     {
         private static Timer_State Timer_State = Timer_State.getinstance();
 
@@ -115,11 +115,11 @@ namespace WinFormlib
         {
             Callback_Timerstop = null;
         }
-        public void Start()
+        public virtual void Start()
         {
             Timer_State.Add(this);
         }
-        public void Stop()
+        public virtual void Stop()
         {
             if (Callback_Timerstop != null)
             {
@@ -135,7 +135,7 @@ namespace WinFormlib
         /// 콜백이 실행되기까지 기다리는 시간(ms)
         /// </summary>
         public int interval = 10;
-        
+
         private Action action = null;
         Timer timer = null;
 
@@ -143,7 +143,7 @@ namespace WinFormlib
         /// 타이머가 만료될때마다 실행되는 함수 지정
         /// </summary>
         /// <param name="target">함수</param>
-        public void setCallback(Action target) 
+        public void setCallback(Action target)
         {
             action = target;
         }
@@ -157,10 +157,10 @@ namespace WinFormlib
             this.interval = peried;
         }
 
-        public void Start()
+        public override void Start()
         {
             timer = new Timer(Task, action, 100, interval);
-            
+
             base.Start();
         }
 
@@ -170,17 +170,88 @@ namespace WinFormlib
             action();
         }
 
-        
 
 
-        public void Stop()
+
+        public override void Stop()
         {
             timer.Dispose();
 
             base.Stop();
         }
-        
+
 
     }
-    
+
+    //예전버전 타이머, 성능이 좀더 좋은것 같더라?
+    public class Threading_Timer_v0 : myThread
+    {
+        private WaitCallback WC = null;
+        Action target = null;
+        private Thread Thread = null;
+        private bool Running = false;
+
+        public int interval = 10;
+
+        /// <summary>
+        /// 타이머가 만료될때마다 실행되는 함수 지정
+        /// </summary>
+        /// <param name="target">함수</param>
+        public void setCallback(Action target)
+        {
+            this.target = target;
+            void action(object obj)
+            {
+                if (!Running)
+                {
+                    Running = true;
+                    target();
+                    Running = false;
+                }
+            }
+            WC = new WaitCallback(action);
+        }
+
+        /// <summary>
+        /// 타이머의 간격 설정
+        /// </summary>
+        /// <param name="peried">밀리초 단위로 설정</param>
+        public void setInterval(int peried)
+        {
+            this.interval = peried;
+        }
+
+        public override void Start()
+        {
+            if (WC != null)
+            {
+                Thread = new Thread(new ThreadStart(T));
+                Thread.Start();
+                base.Start();
+            }
+
+        }
+
+        void T()
+        {
+            while (!Timer_State.getinstance().Stopping)
+            {
+                ThreadPool.QueueUserWorkItem(WC);
+                Thread.SpinWait(interval);
+            }
+        }
+
+        public override void Stop()
+        {
+            try
+            {
+                Thread.Join();
+            }
+            catch (Exception e)
+            {
+
+            }
+            base.Stop();
+        }
+    }
 }
