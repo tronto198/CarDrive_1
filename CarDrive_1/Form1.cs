@@ -18,6 +18,7 @@ namespace CarDrive_1
         WinFormlib.Form_input Form_input = null;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
 
+        MainProgram Main_Program = null;
 
         public Form1()
         {
@@ -25,10 +26,10 @@ namespace CarDrive_1
             
             FirstSetting();
 
-            makeCar();
-            makeMap();
+            Main_Program = new MainProgram();
+            Main_Program.bindKey();
 
-            ShowHelp();
+            //ShowHelp();
             
         }
 
@@ -45,19 +46,10 @@ namespace CarDrive_1
 
         }
 
-        public void makeCar()
-        {
-            Car car = new Car();
-            car.Start();
-        }
 
-        
-        public void makeMap()
+        public MainProgram getMainProgram()
         {
-            //맵 만드는 곳
-            Map Map = new Map();
-            Map.set(600, 300, 400, 250);
-            Screen.callback_work += Map.Draw;
+            return Main_Program;
         }
 
 

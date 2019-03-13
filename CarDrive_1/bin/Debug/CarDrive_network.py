@@ -2,8 +2,11 @@ import tensorflow as tf
 import random
 from collections import deque
 import numpy as np
+
 import clr
-#clr.AddReference("CarDrive_1")
+clr.AddReference("CarDrive_1")
+import CarDrive_1
+
 import Thread_Timer
 from threading import Timer
 
@@ -152,4 +155,10 @@ class Module:
 class CConnecter:
     def __init__(self):
         pass
+
+form = CarDrive_1.Program.ExMain()
+
+
+while True:
+    print(1)
 

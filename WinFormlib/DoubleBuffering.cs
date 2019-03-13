@@ -77,7 +77,7 @@ namespace WinFormlib
 
             //여기서부터 타이머 설정
             //8ms마다 Render라는 함수 실행
-            Threading_Timer thread_FrameRender = new Threading_Timer();
+            Threading_Timer_v0 thread_FrameRender = new Threading_Timer_v0();
             thread_FrameRender.setCallback(new Action(delegate () {
                 //callback_Draw();
                 Render();
