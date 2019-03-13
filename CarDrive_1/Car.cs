@@ -16,7 +16,6 @@ namespace CarDrive_1
         {
             var autoEvent = new AutoResetEvent(false);
             var statusChecker = new StatusChecker(10);
-
             var stateTimer = new Timer(statusChecker.CheckStatus, autoEvent, 1000, 250);
 
         }
@@ -47,6 +46,7 @@ namespace CarDrive_1
         DoubleBuffering d = null;
 
         Image img = Image.FromFile("car.png");
+     
         Bitmap bitmap = null;
         Point center;
 
@@ -98,7 +98,7 @@ namespace CarDrive_1
             //Bitmap b = RotateImage(img, center, (float)degree);
 
             Graphics g = d.getGraphics;
-            g.TranslateTransform(x + center.X, y + center.Y);
+            g.TranslateTransform(x + center.X, y + center.Y); //회전했을때 좌표
             g.RotateTransform((float)degree);
             //g.TranslateTransform(-(x + center.X), -(y + center.Y));
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
