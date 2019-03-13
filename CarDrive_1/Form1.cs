@@ -29,8 +29,16 @@ namespace CarDrive_1
             Main_Program = new MainProgram();
             Main_Program.bindKey();
 
-            //ShowHelp();
-            
+            Line line1 = new Line();
+            Line line2 = new Line();
+            line1.setPoint1(1, 1);
+            line1.setPoint2(2, 2);
+            line2.setPoint1(4, 4);
+            line2.setPoint2(3, 3);
+            bool b = line1.CrossLIne(line2);
+            MessageBox.Show(b + "");
+                                    //ShowHelp();
+
         }
 
         public void FirstSetting()

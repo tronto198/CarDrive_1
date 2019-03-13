@@ -38,9 +38,10 @@ namespace CarDrive_1
     }
     class Car
     {
-        const double accel = 0.12;
-        const double max_velocity = 85.5;
+        const double accel = 0.09;
+        const double max_velocity = 15.5;
         double velocity = 0.0;
+        double turn_max_velocity = 2;
         const double stop_friction = 0.1;
         const double run_friction = 0.05;
         double degree = 90;
@@ -140,7 +141,6 @@ namespace CarDrive_1
             /// 
             void acceling(bool front)
             {
-
                 if (front)
                     velocity += accel;
                 else
@@ -148,10 +148,15 @@ namespace CarDrive_1
             }
             void turning(bool right)
             {
+                double f_turn = turn;
+                double abs_v = Math.Abs(velocity);
+                if (turn_max_velocity > abs_v)
+                    f_turn *= abs_v / turn_max_velocity;
+
                 if (right)
-                    degree += turn;
+                    degree += f_turn;
                 else
-                    degree -= turn;
+                    degree -= f_turn;
             }
 
             void lrcheck(int no)

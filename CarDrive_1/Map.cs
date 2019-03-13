@@ -240,6 +240,33 @@ namespace CarDrive_1
             length = m.getLength(p1, p2);
             return length;
         }
+
+        //http://www.gisdeveloper.co.kr/?p=89
+        public bool CrossLIne(Line l)
+        {
+            double t;
+            double s;
+            double under = (l.p2.Y - l.p1.Y) * (p2.X - p1.X) - (l.p2.X - l.p1.X) * (p2.Y - p1.Y);
+            if (under == 0) return false;
+
+            double _t = (l.p2.X - l.p1.X) * (p1.Y - l.p1.Y) - (l.p2.Y - l.p1.Y) * (p1.X - l.p1.X);
+            double _s = (p2.X - p1.X) * (p1.Y - l.p1.Y) - (p2.Y - p1.Y) * (p1.X - l.p1.X);
+
+            if (_t == 0 && _s == 0)
+                return false;
+
+            
+            t = _t / under;
+            s = _s / under;
+
+            if (t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0) return false;
+
+            Point crosspoint = new Point();
+            crosspoint.X = (int)(p1.X + t * (double)(p2.X - p1.X));
+            crosspoint.Y = (int)(p1.Y + t * (double)(p2.Y - p1.Y));
+
+            return true;
+        }
     }
 
     //길이 구하는거 많이 써서 따로 만들어버림
