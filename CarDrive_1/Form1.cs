@@ -27,21 +27,13 @@ namespace CarDrive_1
             FirstSetting();
 
             Main_Program = new MainProgram();
-            Main_Program.bindKey();
+                                    
 
-            Line line1 = new Line();
-            Line line2 = new Line();
-            line1.setPoint1(1, 1);
-            line1.setPoint2(2, 2);
-            line2.setPoint1(4, 4);
-            line2.setPoint2(3, 3);
-            bool b = line1.CrossLIne(line2);
-            MessageBox.Show(b + "");
-                                    //ShowHelp();
+            //ShowHelp();
 
         }
 
-        public void FirstSetting()
+        void FirstSetting()
         {
             Timer_State = WinFormlib.Timer_State.getinstance(this);
             Screen = WinFormlib.DoubleBuffering.getinstance();
@@ -61,7 +53,7 @@ namespace CarDrive_1
         }
 
 
-        public void GraphicClearEvent()
+        void GraphicClearEvent()
         {
             //여기는 화면에 그려진 것들을 지우는 곳
             //이 함수가 실행된 후에 그려야 제대로 화면에 나옴
@@ -99,7 +91,7 @@ namespace CarDrive_1
             //0.1초 간격으로 timercallback 함수 실행
         }
         
-        public void ShowDraw()
+        void ShowDraw()
         {
             //이런식으로 다양한 Draw가능
             Font thisfont = new Font("AR CENA", 10);
@@ -109,7 +101,7 @@ namespace CarDrive_1
             Screen.getGraphics.DrawString(testint + "", thisfont, thisBrush, 50, 50);
         }
 
-        public void ShowTimercallback()
+        void ShowTimercallback()
         {
             if (testint++ % 10000 == 0)
                 testint -= 5000;

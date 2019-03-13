@@ -241,7 +241,8 @@ namespace CarDrive_1
             return length;
         }
 
-        //http://www.gisdeveloper.co.kr/?p=89
+        //두 선분의 교점 구하기 (여기서는 겹치는지만)
+        //출처 : http://www.gisdeveloper.co.kr/?p=89
         public bool CrossLIne(Line l)
         {
             double t;

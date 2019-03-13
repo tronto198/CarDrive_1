@@ -16,7 +16,8 @@ namespace CarDrive_1
         public static void Main()
         {
             //Application.Run(new Form1());
-            ExMain();
+            Form1 form = ExMain();
+            form.getMainProgram().TestwithKeyinput();
         }
 
         public static Form1 ExMain()

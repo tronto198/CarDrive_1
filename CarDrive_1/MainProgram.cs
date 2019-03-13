@@ -20,15 +20,14 @@ namespace CarDrive_1
             makeMap();
         }
 
-        public void makeCar()
+        void makeCar()
         {
             Car car = new Car();
             Carlist.Add(car);
             car.Start();
         }
-
-
-        public void makeMap()
+        
+        void makeMap()
         {
             //맵 만드는 곳
             Map Map = new Map();
@@ -36,6 +35,7 @@ namespace CarDrive_1
             Map.Show();
         }
 
+        //프로그램에 차 세팅
         public void Set(int Carnum = 1)
         {
             for(int i = 0;i < Carnum; i++)
@@ -44,15 +44,23 @@ namespace CarDrive_1
             }
         }
 
-        public void bindKey()
+        //이 프로그램을 테스트할때 실행
+        public void TestwithKeyinput()
         {
-            Set();
+            Set(1);
+            bindKey();
+        }
+
+        //키보드 입력과 연결시키는 함수
+        void bindKey()
+        {
             worker = new WinFormlib.Threading_Timer_v0();
             worker.setInterval(10);
             worker.setCallback(reactKey);
             worker.Start();
         }
 
+        //눌린 키에 반응하는 함수
         void reactKey()
         {
             WinFormlib.Key_input key = WinFormlib.Key_input.getinstance();

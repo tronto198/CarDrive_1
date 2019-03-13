@@ -78,6 +78,7 @@ namespace CarDrive_1
             bitmap = new Bitmap(img);
         }
         
+        //차를 실제로 움직임
         public void go()
         {
             if (velocity > 0)
@@ -135,6 +136,7 @@ namespace CarDrive_1
             g.ResetTransform();
         }
         
+        //차를 어떻게 움직일지 입력
         public void move(int moveno)
         {
             /// 0  1  2
