@@ -38,15 +38,17 @@ namespace CarDrive_1
     }
     class Car
     {
-        double accel = 0.5;
+        double accel = 0.15;
         double velocity = 0.0;
-        double degree = 60;
-        Threading_Timer timer = new Threading_Timer();
+        double degree = 90;
+        double turn = 3;
+        //Threading_Timer timer = new Threading_Timer();
         //Rectangle car = new Rectangle();
         int x = 0, y = 100;
         DoubleBuffering d = null;
 
         Image img = Image.FromFile("car.png");
+
         Bitmap bitmap = null;
         Point center;
 
@@ -58,10 +60,10 @@ namespace CarDrive_1
         /// </param>
         public void Start()
         {
-            
-            timer.setInterval(100);
-            timer.setCallback(go);
-            timer.Start();
+
+            //timer.setinterval(100);
+            //timer.setcallback(go);
+            //timer.start();
             d = DoubleBuffering.getinstance();
             d.callback_work += Draw;
             //velocity = velocity_0 + accel * duration;
@@ -74,20 +76,14 @@ namespace CarDrive_1
         
         public void go()
         {
-            //위아래 = 가속도 +-
-            //좌우 = 각도?
+            int v_x = 0;
+            int v_y = 0;
 
-            Key_input key_Input = Key_input.getinstance();
+            v_y = (int)(Math.Cos(degree) * velocity);
+            v_x = (int)(Math.Sin(degree) * velocity);
 
-            if (key_Input.get_up == true)
-            {
-                velocity += accel;
-            }
-            
-            x += (int)velocity;
-
-            //---> 
-            //30도 속도 x = cos(30)*velocity y = sin(30)* v
+            x += v_x;
+            y -= v_y;
         }
 
         public void Draw()
@@ -105,6 +101,56 @@ namespace CarDrive_1
             g.ResetTransform();
         }
         
+        public void move(int moveno)
+        {
+            /// 0  1  2
+            /// 3  4  5
+            /// 6  7  8
+            /// 
+            void acceling(bool front)
+            {
+                if (front)
+                    velocity += accel;
+                else
+                    velocity -= accel;
+            }
+            void turning(bool right)
+            {
+                if (right)
+                    degree += turn;
+                else
+                    degree -= turn;
+            }
+
+            void lrcheck(int no)
+            {
+                if(moveno < no)
+                {
+                    turning(false);
+                }
+                else if(moveno > no)
+                {
+                    turning(true);
+                }
+            }
+
+            if(moveno > 5)
+            {
+                acceling(false);
+                lrcheck(7);
+            }
+            else if(moveno > 2)
+            {
+                lrcheck(4);
+            }
+            else
+            {
+                acceling(true);
+                lrcheck(1);
+            }
+
+            go();
+        }
 
         //방향키 입력으로 위치이동
         public void Key(string[] args)

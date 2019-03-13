@@ -55,6 +55,10 @@ namespace CarDrive_1
             //나머지는 센터라인 양끝점에서 원범위 내에 있는지로 판별
         }
 
+        public void Show()
+        {
+            Screen.callback_work += Draw;
+        }
 
         public void Draw()
         {
