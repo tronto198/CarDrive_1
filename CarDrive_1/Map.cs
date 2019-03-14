@@ -21,11 +21,21 @@ namespace CarDrive_1
         int x, y;
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
-        DoubleBuffering Screen;
         Line CenterLine;
+
+        DoubleBuffering Screen;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
+
         List<CheckLine> Linelist = new List<CheckLine>();
-        CheckLine currentgoal;
+        CheckLine currentgoal = null;
+
+
+        Point Startpoint = new Point();
+        const int Startdegree = 90;
+
+
+        public Point getStartPoint() { return Startpoint; }
+        public int getStartDegree() { return Startdegree; }
 
         public Map()
         {
@@ -56,6 +66,18 @@ namespace CarDrive_1
             //차는 센터라인의 x범위 내에서 y가 일정 범위 내에 잇어야함
             //나머지는 센터라인 양끝점에서 원범위 내에 있는지로 판별
 
+
+            makeCheckLines();
+
+            Startpoint.X = (CenterLine.point1.X + CenterLine.point2.X) / 2;
+            Startpoint.Y = CenterLine.point1.Y + half + TrackSize / 2;
+
+        }
+
+        void makeCheckLines()
+        {
+            int half = TrackHeight / 2;
+
             //센터라인 양끝과 중앙, 반원형 1/3, 2/3 지점에 체크라인
             CheckLine make(CheckLine frontline, Point p1, Point p2, bool plus)
             {
@@ -73,7 +95,7 @@ namespace CarDrive_1
 
                 CheckLine c1 = new CheckLine();
                 c1.setPoint1(p2);
-                c1.setPoint2(p2.X , p2.Y + size);
+                c1.setPoint2(p2.X, p2.Y + size);
                 c0.Link(c1);
 
                 Linelist.Add(c0);
@@ -87,14 +109,14 @@ namespace CarDrive_1
                 double radian_1 = m.to_radian * (startdegree + (enddegree - startdegree) / 3 * 2);
                 double radian_2 = m.to_radian * (startdegree + (enddegree - startdegree) / 3);
                 CheckLine c0 = new CheckLine();
-                c0.setPoint1((int)(center.X + Math.Sin(radian_1) * half), 
+                c0.setPoint1((int)(center.X + Math.Sin(radian_1) * half),
                     (int)(center.Y + Math.Cos(radian_1) * half));
-                c0.setPoint2((int)(center.X + Math.Sin(radian_1) * (half + TrackSize)), 
+                c0.setPoint2((int)(center.X + Math.Sin(radian_1) * (half + TrackSize)),
                     (int)(center.Y + Math.Cos(radian_1) * (half + TrackSize)));
                 frontline.Link(frontline);
 
                 CheckLine c1 = new CheckLine();
-                c1.setPoint1((int)(center.X + Math.Sin(radian_2) * half), 
+                c1.setPoint1((int)(center.X + Math.Sin(radian_2) * half),
                     (int)(center.Y + Math.Cos(radian_2) * half));
                 c1.setPoint2((int)(center.X + Math.Sin(radian_2) * (half + TrackSize)),
                     (int)(center.Y + Math.Cos(radian_2) * (half + TrackSize)));
@@ -104,7 +126,7 @@ namespace CarDrive_1
                 Linelist.Add(c1);
 
                 return c1;
-        }
+            }
 
 
             CheckLine lastline = new CheckLine();
@@ -177,7 +199,6 @@ namespace CarDrive_1
             
         }
 
-        
         /// <summary>
         /// 차가 트랙에 닿는지, 포인트를 지났는지 검사
         /// </summary>

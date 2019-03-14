@@ -10,18 +10,15 @@ namespace CarDrive_1
     {
         Map map = null;
         List<Car> Carlist = null;
-        WinFormlib.Threading_Timer_v0 worker;
+        WinFormlib.Threading_Timer_v0 worker = null;
 
         public delegate void work_thread_Handler(Car car);
         public static work_thread_Handler callback_worker;
 
         public MainProgram()
         {
-            map = new Map();
             Carlist = new List<Car>();
-            worker = new WinFormlib.Threading_Timer_v0();
-            worker.setInterval(10);
-
+            
             makeMap();
 
             callback_worker += map.check;
@@ -30,9 +27,9 @@ namespace CarDrive_1
         void makeMap()
         {
             //맵 만드는 곳
-            Map Map = new Map();
-            Map.set(600, 300, 400, 250);
-            Map.Show();
+            map = new Map();
+            map.set(600, 300, 400, 250);
+            map.Show();
         }
 
         //프로그램에 차 세팅
@@ -42,7 +39,9 @@ namespace CarDrive_1
             {
                 Car car = new Car();
                 Carlist.Add(car);
-                car.Start();
+                car.setLocation(map.getStartPoint());
+                car.setDegree(map.getStartDegree());
+                car.Show();
             }
         }
 
@@ -58,6 +57,8 @@ namespace CarDrive_1
         {
             SetCar(1);
             bindKey();
+            worker = new WinFormlib.Threading_Timer_v0();
+            worker.setInterval(10);
             worker.setCallback(Thread_worker);
 
             worker.Start();

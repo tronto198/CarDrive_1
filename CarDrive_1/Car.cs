@@ -45,37 +45,46 @@ namespace CarDrive_1
         const double run_friction = 0.05;
         double degree = 0;
         const double turn = 3;
-
-        //Threading_Timer timer = new Threading_Timer();
+        
         //Rectangle car = new Rectangle();
         double x = 0, y = 100;
-        DoubleBuffering d = null;
+        DoubleBuffering d = DoubleBuffering.getinstance();
 
         Image img = Image.FromFile("car.png");
         Bitmap bitmap = null;
+        Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
+        
+
         Point center;
 
-        /// <summary>
-        /// 속도, 가속도 설정
-        /// </summary>
-        public void Start()
+        public Car()
         {
-
-            //timer.setinterval(100);
-            //timer.setcallback(go);
-            //timer.start();
-            d = DoubleBuffering.getinstance();
-            d.callback_work += Draw;
-            //velocity = velocity_0 + accel * duration;
-
-
-            center = new Point((int)(img.Width / 2),(int)(img.Height / 2));
-
+            center = new Point((int)(img.Width / 2), (int)(img.Height / 2));
             bitmap = new Bitmap(img);
         }
         
+
+        public void Show()
+        {
+            d.callback_work += Draw;
+        }
+        
+        public void setLocation(Point p)
+        {
+            setLocation(p.X, p.Y);
+        }
+        public void setLocation(int _x, int _y)
+        {
+            x = _x - center.X;
+            y = _y - center.Y;
+        }
+        public void setDegree(int _degree)
+        {
+            degree = (double)_degree;
+        }
+
         //차를 실제로 움직임
-        public void go()
+        void go()
         {
             if (velocity > 0)
             {
@@ -113,11 +122,9 @@ namespace CarDrive_1
             y -= v_y;
         }
 
-        public void Draw()
+        //그리기
+        void Draw()
         {
-            Brush brush = new SolidBrush(Color.Black);
-            Pen pen = new Pen(brush);
-
             //Bitmap b = RotateImage(img, center, (float)degree);
 
             Graphics g = d.getGraphics;
