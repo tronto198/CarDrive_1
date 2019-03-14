@@ -25,6 +25,7 @@ namespace CarDrive_1
         Line CenterLine;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
         List<CheckLine> Linelist = new List<CheckLine>();
+        CheckLine currentgoal;
 
         public Map()
         {
@@ -130,6 +131,7 @@ namespace CarDrive_1
 
 
             firstline.Activate();
+            currentgoal = firstline;
 
             Linelist.Add(lastline);
 
@@ -182,14 +184,17 @@ namespace CarDrive_1
         /// <param name="car">검사할 차</param>
         public void check(Car car)
         {
-
             //트랙에 충돌되는지
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?
             //각각 다른 함수로 연결
 
-            //차의 모서리 넷 필요
+            //차의 양옆 선 둘 필요
             //모서리 넷이 각각 안에 있는지로 판별
+
+            int reward = 0;
+            const int Crashreward = -100;
+
             
 
             //한 점이 트랙 안에 정상적으로 있는지 판별 (참이면 정상, 거짓이면 충돌)
@@ -205,6 +210,7 @@ namespace CarDrive_1
                 {
                     if(num < half || half + TrackSize < num) //충돌 했을때
                     {
+                        reward = Crashreward;
                         return false;
                     }
                     else  //통과!
@@ -235,23 +241,26 @@ namespace CarDrive_1
 
             }
 
-            //차가 세이브 포인트를 넘겼는지 판별 차의 왼쪽 앞점, 차의 오른쪽 앞점
-            //bool checkBonus(Point Lp, Point Rp)
-            {
 
+            if (currentgoal == null) return;
+
+            //차가 세이브 포인트를 넘겼는지 판별
+            if (currentgoal.Crashing(car, out currentgoal, out reward))
+            {
+                Bonus(car, reward);
             }
 
-            //checkCrash 4번, 보너스 한번 실행
+            //checkCrash 4번, 보너스 2번 실행
 
 
         }
 
-        void Crashed(Car car)
+        void Crashed(Car car, int reward)
         {
             //차에 함수 만들기
         }
 
-        void Bonus(Car car)
+        void Bonus(Car car, int reward)
         {
             //차에 함수 만들기
         }
@@ -264,7 +273,7 @@ namespace CarDrive_1
     {
         private Point p1, p2;
         private double length;
-        protected Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
+        protected static Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
         protected bool drawing = false;
         //얘네는 숨기고
 
@@ -329,7 +338,7 @@ namespace CarDrive_1
 
         //두 선분의 교점 구하기 (여기서는 겹치는지만)
         //출처 : http://www.gisdeveloper.co.kr/?p=89
-        public bool CrossLIne(Line l)
+        public bool CrossLIne(Line l, ref Point p)
         {
             double t;
             double s;
@@ -347,14 +356,13 @@ namespace CarDrive_1
             s = _s / under;
 
             if (t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0) return false;
-
-            Point crosspoint = new Point();
-            crosspoint.X = (int)(p1.X + t * (double)(p2.X - p1.X));
-            crosspoint.Y = (int)(p1.Y + t * (double)(p2.Y - p1.Y));
-
+            
+            p.X = (int)(p1.X + t * (double)(p2.X - p1.X));
+            p.Y = (int)(p1.Y + t * (double)(p2.Y - p1.Y));
             return true;
         }
 
+        
         public virtual void Show()
         {
             if (!drawing)
@@ -372,30 +380,58 @@ namespace CarDrive_1
     {
         int reward = 10;
         bool activation = false;
-        Pen ActivatePen = new Pen(new SolidBrush(Color.Green));
-        CheckLine nextLine = null;
+        static Pen ActivatePen = new Pen(new SolidBrush(Color.Green));
+        CheckLine nextLine;
 
-        
+        public CheckLine()
+        {
+            nextLine = this;
+        }
+        /// <summary>
+        /// 보상 설정
+        /// </summary>
+        /// <param name="_reward">보상값</param>
         public void setreward(int _reward)
         {
             reward = _reward;
         }
 
+        /// <summary>
+        /// 다음번 선과 링크
+        /// </summary>
+        /// <param name="next">다음번 라인</param>
         public void Link(CheckLine next)
         {
             nextLine = next;
         }
 
+        /// <summary>
+        /// 이 체크라인 활성화
+        /// </summary>
         public void Activate()
         {
             activation = true;
         }
+        
 
-        public int getreward()
+        public bool Crashing(Car car, out CheckLine line, out int _reward)
         {
-            activation = false;
-            nextLine.activation = true;
-            return reward;
+            if (!activation) throw new Exception("활성화되지 않은 라인!");
+
+            if (false)
+            {
+                activation = false;
+                nextLine.activation = true;
+                line = nextLine;
+                _reward = reward;
+                return true;
+            }
+            else
+            {
+                _reward = 0;
+                line = this;
+                return false;
+            }
         }
 
         public override void Show()

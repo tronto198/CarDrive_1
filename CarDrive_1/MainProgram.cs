@@ -12,19 +12,19 @@ namespace CarDrive_1
         List<Car> Carlist = null;
         WinFormlib.Threading_Timer_v0 worker;
 
+        public delegate void work_thread_Handler(Car car);
+        public static work_thread_Handler callback_worker;
+
         public MainProgram()
         {
             map = new Map();
             Carlist = new List<Car>();
+            worker = new WinFormlib.Threading_Timer_v0();
+            worker.setInterval(10);
 
             makeMap();
-        }
 
-        void makeCar()
-        {
-            Car car = new Car();
-            Carlist.Add(car);
-            car.Start();
+            callback_worker += map.check;
         }
         
         void makeMap()
@@ -36,39 +36,44 @@ namespace CarDrive_1
         }
 
         //프로그램에 차 세팅
-        public void Set(int Carnum = 1)
+        public void SetCar(int Carnum = 1)
         {
             for(int i = 0;i < Carnum; i++)
             {
-                makeCar();
+                Car car = new Car();
+                Carlist.Add(car);
+                car.Start();
             }
         }
 
-        //이 프로그램을 테스트할때 실행
+        //나중에 파이썬 쓰레드에서 실행, 또는 C# 테스트용 스레드에서 실행
+        public void Thread_worker()
+        {
+            foreach (Car car in Carlist)
+                callback_worker(car);
+        }
+
+        //이 프로그램을 C#으로 테스트할때 실행
         public void TestwithKeyinput()
         {
-            Set(1);
+            SetCar(1);
             bindKey();
+            worker.setCallback(Thread_worker);
+
+            worker.Start();
         }
 
         //키보드 입력과 연결시키는 함수
         void bindKey()
         {
-            worker = new WinFormlib.Threading_Timer_v0();
-            worker.setInterval(10);
-            worker.setCallback(reactKey);
-            worker.Start();
+            callback_worker += reactKey;
         }
 
         //눌린 키에 반응하는 함수
-        void reactKey()
+        void reactKey(Car car)
         {
             WinFormlib.Key_input key = WinFormlib.Key_input.getinstance();
             int keyinput = 0;
-            /// 4  1  6
-            /// 3  0  7
-            /// 8  5  2
-            /// 
             /// 0  1  2
             /// 3  4  5
             /// 6  7  8
@@ -86,23 +91,12 @@ namespace CarDrive_1
                 }
             }
 
-            if (key.get_up)
-            {
-                keyinput = 1;
-                lr();
-            }
-            else if (key.get_down)
-            {
-                keyinput = 7;
-                lr();
-            }
-            else
-            {
-                keyinput = 4;
-                lr();
-            }
+            if (key.get_up) keyinput = 1;
+            else if (key.get_down) keyinput = 7;
+            else keyinput = 4;
+            lr();
 
-            Carlist[0].move(keyinput);
+            car.move(keyinput);
         }
 
         /*public Tuple<double[][], int[], bool[]> Request_Move(int[] move_onehot)

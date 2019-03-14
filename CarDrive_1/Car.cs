@@ -10,37 +10,37 @@ using System.Drawing.Drawing2D;
 
 namespace CarDrive_1
 {
-    class TimerExample
-    {
-        public void Timer()
-        {
-            var autoEvent = new AutoResetEvent(false);
-            var statusChecker = new StatusChecker(10);
-            var stateTimer = new Timer(statusChecker.CheckStatus, autoEvent, 1000, 250);
+    //class TimerExample
+    //{
+    //    public void Timer()
+    //    {
+    //        var autoEvent = new AutoResetEvent(false);
+    //        var statusChecker = new StatusChecker(10);
+    //        var stateTimer = new Timer(statusChecker.CheckStatus, autoEvent, 1000, 250);
 
-        }
-    }
-    class StatusChecker
-    {
-        private int invokeCount;
-        private int maxCount;
-        public StatusChecker(int count)
-        {
-            invokeCount = 0;
-            maxCount = count;
-        }
-        public void CheckStatus(object stateInfo)
-        {
-            AutoResetEvent autoEvent = (AutoResetEvent)stateInfo;
+    //    }
+    //}
+    //class StatusChecker
+    //{
+    //    private int invokeCount;
+    //    private int maxCount;
+    //    public StatusChecker(int count)
+    //    {
+    //        invokeCount = 0;
+    //        maxCount = count;
+    //    }
+    //    public void CheckStatus(object stateInfo)
+    //    {
+    //        AutoResetEvent autoEvent = (AutoResetEvent)stateInfo;
             
-        }
-    }
-    class Car
+    //    }
+    //}
+    public class Car
     {
         const double accel = 0.09;
         const double max_velocity = 15.5;
         double velocity = 0.0;
-        double turn_max_velocity = 2;
+        double turn_max_velocity = 3;
         const double stop_friction = 0.1;
         const double run_friction = 0.05;
         double degree = 0;
@@ -58,9 +58,6 @@ namespace CarDrive_1
         /// <summary>
         /// 속도, 가속도 설정
         /// </summary>
-        /// <param name="">
-        /// 
-        /// </param>
         public void Start()
         {
 
