@@ -46,7 +46,6 @@ namespace CarDrive_1
         double degree = 0;
         const double turn = 3;
 
-        const double to_radian = Math.PI / 180;
         //Threading_Timer timer = new Threading_Timer();
         //Rectangle car = new Rectangle();
         double x = 0, y = 100;
@@ -110,8 +109,8 @@ namespace CarDrive_1
             double v_x = 0;
             double v_y = 0;
 
-            v_y = (Math.Cos(degree * to_radian) * velocity);
-            v_x = (Math.Sin(degree * to_radian) * velocity);
+            v_y = (Math.Cos(degree * m.to_radian) * velocity);
+            v_x = (Math.Sin(degree * m.to_radian) * velocity);
 
             x += v_x;
             y -= v_y;

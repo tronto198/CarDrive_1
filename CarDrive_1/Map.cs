@@ -11,14 +11,12 @@ namespace CarDrive_1
     class Map
     {
         ///해야할것들
-        ///맵 크기 정하고 그에 맞게 트랙 생성 o
         ///트랙에 따라서 차와 충돌되는지 계산 o
         ///트랙을 따라서 세이브 포인트를 만들고 이 역시 충돌계산
         ///트랙, 세이브 포인트에 충돌될때 각각 실행되는 함수 생성
         ///원점은 맵 가운데 o
         ///왼쪽 위 구석에 반복수 표시?
-        ///차를 여기에 넣을까? 차는 스레드로 한꺼번에 돌려야하나?
-        ///타원말고 운동장 트랙처럼으로 변경  그럼 양끝은 원형으로, 위아래는 선으로 가능 o
+        ///차를 여기에 넣을까?
 
         int x, y;
         int TrackWidth, TrackHeight;
@@ -26,6 +24,7 @@ namespace CarDrive_1
         DoubleBuffering Screen;
         Line CenterLine;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
+        List<CheckLine> Linelist = new List<CheckLine>();
 
         public Map()
         {
@@ -45,14 +44,99 @@ namespace CarDrive_1
             x = _x;
             y = _y;
             TrackWidth = width;
-            TrackHeight = height;
+
+            this.TrackHeight = height;
+            int half = TrackHeight / 2;
 
             //정가운데에 가로 선하나를 저장
-            CenterLine.setPoint1(x - width / 2 - TrackHeight / 2, y);
-            CenterLine.setPoint2(x + width / 2 - TrackHeight / 2, y);
+            CenterLine.setPoint1(x - width / 2 - half, y);
+            CenterLine.setPoint2(x + width / 2 - half, y);
 
             //차는 센터라인의 x범위 내에서 y가 일정 범위 내에 잇어야함
             //나머지는 센터라인 양끝점에서 원범위 내에 있는지로 판별
+
+            //센터라인 양끝과 중앙, 반원형 1/3, 2/3 지점에 체크라인
+            CheckLine make(CheckLine frontline, Point p1, Point p2, bool plus)
+            {
+                int size = TrackSize;
+                if (!plus)
+                {
+                    size = -TrackSize;
+                }
+
+                CheckLine c0 = new CheckLine();
+                c0.setPoint1((p1.X + p2.X) / 2, p1.Y);
+                c0.setPoint2((p1.X + p2.X) / 2, p1.Y + size);
+                frontline.Link(c0);
+                c0.setreward(100);
+
+                CheckLine c1 = new CheckLine();
+                c1.setPoint1(p2);
+                c1.setPoint2(p2.X , p2.Y + size);
+                c0.Link(c1);
+
+                Linelist.Add(c0);
+                Linelist.Add(c1);
+
+                return c1;
+            }
+
+            CheckLine make_round(CheckLine frontline, Point center, int startdegree, int enddegree)
+            {
+                double radian_1 = m.to_radian * (startdegree + (enddegree - startdegree) / 3 * 2);
+                double radian_2 = m.to_radian * (startdegree + (enddegree - startdegree) / 3);
+                CheckLine c0 = new CheckLine();
+                c0.setPoint1((int)(center.X + Math.Sin(radian_1) * half), 
+                    (int)(center.Y + Math.Cos(radian_1) * half));
+                c0.setPoint2((int)(center.X + Math.Sin(radian_1) * (half + TrackSize)), 
+                    (int)(center.Y + Math.Cos(radian_1) * (half + TrackSize)));
+                frontline.Link(frontline);
+
+                CheckLine c1 = new CheckLine();
+                c1.setPoint1((int)(center.X + Math.Sin(radian_2) * half), 
+                    (int)(center.Y + Math.Cos(radian_2) * half));
+                c1.setPoint2((int)(center.X + Math.Sin(radian_2) * (half + TrackSize)),
+                    (int)(center.Y + Math.Cos(radian_2) * (half + TrackSize)));
+                c0.Link(c1);
+
+                Linelist.Add(c0);
+                Linelist.Add(c1);
+
+                return c1;
+        }
+
+
+            CheckLine lastline = new CheckLine();
+            lastline.setPoint1(CenterLine.point1.X, CenterLine.point1.Y + half);
+            lastline.setPoint2(CenterLine.point1.X, CenterLine.point1.Y + half + TrackSize);
+
+
+
+            CheckLine firstline = make(lastline, new Point(CenterLine.point1.X, CenterLine.point1.Y + half),
+                 new Point(CenterLine.point2.X, CenterLine.point2.Y + half), true);
+
+            CheckLine line2 = make_round(firstline, CenterLine.point2, 0, 180);
+            CheckLine line3 = new CheckLine();
+            line3.setPoint1(CenterLine.point2.X, CenterLine.point2.Y - half);
+            line3.setPoint2(CenterLine.point2.X, CenterLine.point2.Y - half - TrackSize);
+            line2.Link(line3);
+            Linelist.Add(line3);
+
+            CheckLine line4 = make(line3, new Point(CenterLine.point2.X, CenterLine.point2.Y - half),
+                new Point(CenterLine.point1.X, CenterLine.point1.Y - half), false);
+
+            CheckLine line5 = make_round(line4, CenterLine.point1, 180, 360);
+            line5.Link(lastline);
+
+
+            firstline.Activate();
+
+            Linelist.Add(lastline);
+
+            foreach (CheckLine c in Linelist)
+            {
+                c.Show();
+            }
         }
 
         public void Show()
@@ -60,7 +144,7 @@ namespace CarDrive_1
             Screen.callback_work += Draw;
         }
 
-        public void Draw()
+        void Draw()
         {
             //트랙을 그리는 작업을 함수로 지정
             void work(int Size)     // Size = 양끝 원의 크기(지름 이면서 트랙의 y축 크기)
@@ -179,7 +263,9 @@ namespace CarDrive_1
     class Line
     {
         private Point p1, p2;
-        private double length; 
+        private double length;
+        protected Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
+        protected bool drawing = false;
         //얘네는 숨기고
 
         public Point point1 { get { return p1; } }
@@ -268,11 +354,74 @@ namespace CarDrive_1
 
             return true;
         }
+
+        public virtual void Show()
+        {
+            if (!drawing)
+            {
+                DoubleBuffering.getinstance().callback_work += delegate ()
+                {
+                    DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, p1, p2);
+                };
+            }
+        }
+    }
+
+
+    class CheckLine : Line
+    {
+        int reward = 10;
+        bool activation = false;
+        Pen ActivatePen = new Pen(new SolidBrush(Color.Green));
+        CheckLine nextLine = null;
+
+        
+        public void setreward(int _reward)
+        {
+            reward = _reward;
+        }
+
+        public void Link(CheckLine next)
+        {
+            nextLine = next;
+        }
+
+        public void Activate()
+        {
+            activation = true;
+        }
+
+        public int getreward()
+        {
+            activation = false;
+            nextLine.activation = true;
+            return reward;
+        }
+
+        public override void Show()
+        {
+            if (!drawing)
+            {
+                DoubleBuffering.getinstance().callback_work += delegate ()
+                {
+                    if (activation)
+                    {
+                        DoubleBuffering.getinstance().getGraphics.DrawLine(ActivatePen, point1, point2);
+                    }
+                    else
+                    {
+                        DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, point1, point2);
+                    }
+                };
+            }
+        }
     }
 
     //길이 구하는거 많이 써서 따로 만들어버림
     public static class m
     {
+        //degree to radian
+        public const double to_radian = Math.PI / 180;
         public static double getLength(Point p1, Point p2)
         {
             return Math.Sqrt((double)((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));
