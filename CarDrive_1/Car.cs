@@ -206,7 +206,7 @@ namespace CarDrive_1
             go();
         }
 
-        public void car_vertex()// 앞부분 가운데, 뒷부분 가운데 점의 좌표
+        public void car_vertex()// 앞부분 가운데, 뒷부분 가운데 점의 좌표 **검증필요**
         {
             double x_f, y_f, x_b, y_b;//실제 사용할 좌표
             double x_f_i, y_f_i, x_b_i, y_b_i;//초기값
@@ -229,12 +229,10 @@ namespace CarDrive_1
             a = (y_f - y_b) / (x_f - x_b);//기울기
             b = y_f - a * x_f;//y절편
 
+            double F_r, F_l;//오른쪽 선분, 왼쪽 선분의 정보 ex) f(x, y)=y+ax+b 이런형식인데 직선이라서 ... 선분으로 하려면 x 범위 구해야할듯...어케구할까???
 
-
-
-
-
-
+            F_r = real_center.Y - a * (real_center.X - 13.5 * Math.Cos(degree))-b+13.5*Math.Sin(degree);
+            F_l= real_center.Y - a * (real_center.X + 13.5 * Math.Cos(degree)) - b - 13.5 * Math.Sin(degree);
 
         }
 
