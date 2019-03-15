@@ -7,6 +7,7 @@ using System.Threading;
 using WinFormlib;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace CarDrive_1
 {
@@ -50,13 +51,22 @@ namespace CarDrive_1
         double x = 0, y = 100;
         DoubleBuffering d = DoubleBuffering.getinstance();
 
+
         Image img = Image.FromFile("car.png");
+        
+      
+
         Bitmap bitmap = null;
         Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
         
 
         Point center;
 
+
+        public void setSize()
+        {
+            Size resize = new Size(27, 60);
+        }
         public Car()
         {
             center = new Point((int)(img.Width / 2), (int)(img.Height / 2));

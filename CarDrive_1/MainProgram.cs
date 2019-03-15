@@ -42,6 +42,7 @@ namespace CarDrive_1
                 car.setLocation(map.getStartPoint());
                 car.setDegree(0);
                 car.Show();
+                car.setSize();
             }
         }
 
