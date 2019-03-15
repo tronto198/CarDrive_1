@@ -40,7 +40,7 @@ namespace CarDrive_1
                 Car car = new Car();
                 Carlist.Add(car);
                 car.setLocation(map.getStartPoint());
-                car.setDegree(map.getStartDegree());
+                car.setDegree(0);
                 car.Show();
             }
         }

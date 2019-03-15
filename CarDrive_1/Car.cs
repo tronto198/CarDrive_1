@@ -196,8 +196,35 @@ namespace CarDrive_1
             go();
         }
 
-        public void car_vertex()//차의 네개의 꼭짓점
+        public void car_vertex()// 앞부분 가운데, 뒷부분 가운데 점의 좌표
         {
+            double x_f, y_f, x_b, y_b;//실제 사용할 좌표
+            double x_f_i, y_f_i, x_b_i, y_b_i;//초기값
+            Point real_center = new Point((int)(x + center.X), (int)(y + center.Y));
+            double a, b;//일차함수의 기울기, y절편
+            x_f_i = real_center.X;
+            y_f_i = real_center.Y + 30.0;
+
+            x_b_i = real_center.X;
+            y_b_i = real_center.X - 30.0;
+
+            x_f = (x_f_i - real_center.X) * Math.Cos(degree) - (y_f_i - real_center.Y) * Math.Sin(degree) + real_center.X;
+
+            y_f = (x_f_i - real_center.X) * Math.Sin(degree) + (y_f_i - real_center.Y) * Math.Cos(degree) + real_center.Y;
+
+            x_b = (x_b_i - real_center.X) * Math.Cos(degree) - (y_b_i - real_center.Y) * Math.Sin(degree) + real_center.X;
+            y_b = (x_b_i - real_center.X) * Math.Sin(degree) + (y_b_i - real_center.Y) * Math.Cos(degree) + real_center.Y;
+
+
+            a = (y_f - y_b) / (x_f - x_b);//기울기
+            b = y_f - a * x_f;//y절편
+
+
+
+
+
+
+
 
         }
 
