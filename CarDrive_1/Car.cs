@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 
 using System.Threading;
-
+using WinFormlib;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace CarDrive_1
 {
@@ -14,7 +16,6 @@ namespace CarDrive_1
         {
             var autoEvent = new AutoResetEvent(false);
             var statusChecker = new StatusChecker(10);
-
             var stateTimer = new Timer(statusChecker.CheckStatus, autoEvent, 1000, 250);
 
         }
@@ -35,28 +36,182 @@ namespace CarDrive_1
         }
     }
     class Car
-    {  
-        
-       
+    {
+        const double accel = 0.12;
+        const double max_velocity = 85.5;
+        double velocity = 0.0;
+        const double stop_friction = 0.1;
+        const double run_friction = 0.05;
+        double degree = 0;
+        const double turn = 3;
+
+        const double to_radian = Math.PI / 180;
+        //Threading_Timer timer = new Threading_Timer();
+        //Rectangle car = new Rectangle();
+        double x = 0, y = 100;
+        DoubleBuffering d = null;
+
+        Image img = Image.FromFile("car.png");
+        Bitmap bitmap = null;
+        Point center;
+
         /// <summary>
         /// 속도, 가속도 설정
         /// </summary>
         /// <param name="">
         /// 
         /// </param>
-        public void input()
+        public void Start()
         {
-          
-            double accel = 9.8;         
-            double velocity= 0.0;
-            velocity= velocity+accel;
 
+            //timer.setinterval(100);
+            //timer.setcallback(go);
+            //timer.start();
+            d = DoubleBuffering.getinstance();
+            d.callback_work += Draw;
             //velocity = velocity_0 + accel * duration;
-        }
-         
-        
 
+
+            center = new Point((int)(img.Width / 2),(int)(img.Height / 2));
+
+            bitmap = new Bitmap(img);
+        }
         
+        public void go()
+        {
+            if (velocity > 0)
+            {
+                velocity -= run_friction;
+                if (velocity < 0)
+                {
+                    velocity = 0;
+                }
+                else if(velocity > max_velocity)
+                {
+                    velocity = max_velocity;
+                }
+            }
+            else
+            {
+                velocity += run_friction;
+                if (velocity > 0)
+                {
+                    velocity = 0;
+                }
+                else if(velocity < -max_velocity)
+                {
+                    velocity = -max_velocity;
+                }
+            }
+            
+
+            double v_x = 0;
+            double v_y = 0;
+
+            v_y = (Math.Cos(degree * to_radian) * velocity);
+            v_x = (Math.Sin(degree * to_radian) * velocity);
+
+            x += v_x;
+            y -= v_y;
+        }
+
+        public void Draw()
+        {
+            Brush brush = new SolidBrush(Color.Black);
+            Pen pen = new Pen(brush);
+
+            //Bitmap b = RotateImage(img, center, (float)degree);
+
+            Graphics g = d.getGraphics;
+
+            //회전했을때 좌표
+
+            g.TranslateTransform((float)x + center.X, (float)y + center.Y);
+
+            g.RotateTransform((float)degree);
+            //g.TranslateTransform(-(x + center.X), -(y + center.Y));
+            d.getGraphics.DrawImage(img, -center.X, -center.Y);
+            g.ResetTransform();
+        }
+        
+        public void move(int moveno)
+        {
+            /// 0  1  2
+            /// 3  4  5
+            /// 6  7  8
+            /// 
+            void acceling(bool front)
+            {
+
+                if (front)
+                    velocity += accel;
+                else
+                    velocity -= accel;
+            }
+            void turning(bool right)
+            {
+                if (right)
+                    degree += turn;
+                else
+                    degree -= turn;
+            }
+
+            void lrcheck(int no)
+            {
+                if(moveno < no)
+                {
+                    turning(false);
+                }
+                else if(moveno > no)
+                {
+                    turning(true);
+                }
+            }
+
+            if(moveno > 5)
+            {
+                acceling(false);
+                lrcheck(7);
+            }
+            else if(moveno > 2)
+            {
+                lrcheck(4);
+            }
+            else
+            {
+                acceling(true);
+                lrcheck(1);
+            }
+
+            go();
+        }
+
+        public void car_vertex()//차의 네개의 꼭짓점과 앞부분 가운데, 뒷부분 가운데 점의 좌표: 총 6개의 점의 좌표
+        {
+            double x_f, y_f, x_b, y_b;
+            double x_1, y_1, x_2, y_2, x_3, y_3, x_4, y_4;
+            double a, b;//일차함수의 기울기, y절편
+
+            x_f = ((float)x + center.X) * Math.Sin(degree);
+            y_f= ((float)y + center.Y+30.0) * Math.Cos(degree);
+
+            x_b= ((float)x + center.X) * Math.Sin(degree);
+            y_b = ((float)y + center.Y - 30.0) * Math.Cos(degree);
+
+
+
+            a = (y_f - y_b) / (x_f - x_b);//기울기
+            b = y_f - a * x_f;//y절편
+
+
+
+
+
+
+
+
+        }
+
         //방향키 입력으로 위치이동
         public void Key(string[] args)
         {
