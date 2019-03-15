@@ -66,6 +66,7 @@ namespace CarDrive_1
         public void setSize()
         {
             Size resize = new Size(27, 60);
+            center = new Point((int)(img.Width / 2), (int)(img.Height / 2));
         }
         public Car()
         {
@@ -85,8 +86,8 @@ namespace CarDrive_1
         }
         public void setLocation(int _x, int _y)
         {
-            x = _x - center.X;
-            y = _y - center.Y;
+            x = _x;
+            y = _y;
         }
         public void setDegree(int _degree)
         {
@@ -141,7 +142,7 @@ namespace CarDrive_1
 
             //회전했을때 좌표
 
-            g.TranslateTransform((float)x + center.X, (float)y + center.Y);
+            g.TranslateTransform((float)x, (float)y);
 
             g.RotateTransform((float)degree);
             //g.TranslateTransform(-(x + center.X), -(y + center.Y));
@@ -210,10 +211,11 @@ namespace CarDrive_1
         {
             double x_f, y_f, x_b, y_b;//실제 사용할 좌표
             double x_f_i, y_f_i, x_b_i, y_b_i;//초기값
-            Point real_center = new Point((int)(x + center.X), (int)(y + center.Y));
+            Point real_center = new Point((int)x,(int)y);
             double a, b;//일차함수의 기울기, y절편
             x_f_i = real_center.X;
             y_f_i = real_center.Y + 30.0;
+            
 
             x_b_i = real_center.X;
             y_b_i = real_center.X - 30.0;
@@ -225,7 +227,7 @@ namespace CarDrive_1
             x_b = (x_b_i - real_center.X) * Math.Cos(degree) - (y_b_i - real_center.Y) * Math.Sin(degree) + real_center.X;
             y_b = (x_b_i - real_center.X) * Math.Sin(degree) + (y_b_i - real_center.Y) * Math.Cos(degree) + real_center.Y;
 
-
+            
             a = (y_f - y_b) / (x_f - x_b);//기울기
             b = y_f - a * x_f;//y절편
 
