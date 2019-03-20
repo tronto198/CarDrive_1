@@ -227,14 +227,37 @@ namespace CarDrive_1
             x_b = (x_b_i - real_center.X) * Math.Cos(degree) - (y_b_i - real_center.Y) * Math.Sin(degree) + real_center.X;
             y_b = (x_b_i - real_center.X) * Math.Sin(degree) + (y_b_i - real_center.Y) * Math.Cos(degree) + real_center.Y;
 
-            
-            a = (y_f - y_b) / (x_f - x_b);//기울기
-            b = y_f - a * x_f;//y절편
 
-            double F_r, F_l;//오른쪽 선분, 왼쪽 선분의 정보 ex) f(x, y)=y+ax+b 이런형식인데 직선이라서 ... 선분으로 하려면 x 범위 구해야할듯...어케구할까???
+            // a = (y_f - y_b) / (x_f - x_b);//기울기
+            // b = y_f - a * x_f;//y절편
 
-            F_r = real_center.Y - a * (real_center.X - 13.5 * Math.Cos(degree))-b+13.5*Math.Sin(degree);
-            F_l= real_center.Y - a * (real_center.X + 13.5 * Math.Cos(degree)) - b - 13.5 * Math.Sin(degree);
+            //
+            //1   3
+            //
+            //2   4
+            //
+
+            double x_1, y_1, x_2, y_2, x_3, y_3, x_4, y_4;
+            //초기값 설정
+            x_1= real_center.X - 13.5;
+            y_1= real_center.Y + 30.0;
+            x_2 = real_center.X - 13.5;
+            y_2= real_center.Y - 30.0;
+            x_3 = real_center.X + 13.5;
+            y_3 = real_center.Y + 30.0;
+            x_4 = real_center.X + 13.5;
+            y_4 = real_center.Y - 30.0;
+
+            //구하려는 값
+            x_1 = (x_1 - real_center.X) * Math.Cos(degree) - (y_1 - real_center.Y) * Math.Sin(degree) + real_center.X;
+            y_1 = (x_1 - real_center.X) * Math.Sin(degree) + (y_1 - real_center.Y) * Math.Cos(degree) + real_center.Y;
+            x_2 = (x_2 - real_center.X) * Math.Cos(degree) - (y_2 - real_center.Y) * Math.Sin(degree) + real_center.X;
+            y_2 = (x_2 - real_center.X) * Math.Sin(degree) + (y_2 - real_center.Y) * Math.Cos(degree) + real_center.Y;
+            x_3 = (x_3 - real_center.X) * Math.Cos(degree) - (y_3 - real_center.Y) * Math.Sin(degree) + real_center.X;
+            y_3 = (x_3 - real_center.X) * Math.Sin(degree) + (y_3 - real_center.Y) * Math.Cos(degree) + real_center.Y;
+            x_4 = (x_4 - real_center.X) * Math.Cos(degree) - (y_4 - real_center.Y) * Math.Sin(degree) + real_center.X;
+            y_4 = (x_4 - real_center.X) * Math.Sin(degree) + (y_4 - real_center.Y) * Math.Cos(degree) + real_center.Y;
+
 
         }
 
