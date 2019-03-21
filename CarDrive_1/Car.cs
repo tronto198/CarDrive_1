@@ -46,7 +46,8 @@ namespace CarDrive_1
         const double run_friction = 0.05;
         double degree = 0;
         const double turn = 3;
-        
+        Line[] lines = new Line[5];
+
         //Rectangle car = new Rectangle();
         double x = 0, y = 100;
         DoubleBuffering d = DoubleBuffering.getinstance();
@@ -54,8 +55,6 @@ namespace CarDrive_1
 
         Image img = Image.FromFile("car.png");
         
-      
-
         Bitmap bitmap = null;
         Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
         
@@ -70,6 +69,10 @@ namespace CarDrive_1
         }
         public Car()
         {
+            for(int i = 0;i < 5; i++)
+            {
+                lines[i] = new Line();
+            }
             center = new Point((int)(img.Width / 2), (int)(img.Height / 2));
             bitmap = new Bitmap(img);
         }
@@ -78,6 +81,10 @@ namespace CarDrive_1
         public void Show()
         {
             d.callback_work += Draw;
+            foreach (var l in lines)
+            {
+                l.Show();
+            }
         }
         
         public void setLocation(Point p)
@@ -131,6 +138,8 @@ namespace CarDrive_1
 
             x += v_x;
             y -= v_y;
+
+            cal_distance();
         }
 
         //그리기
@@ -148,6 +157,7 @@ namespace CarDrive_1
             //g.TranslateTransform(-(x + center.X), -(y + center.Y));
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
             g.ResetTransform();
+
         }
         
         //차를 어떻게 움직일지 입력
@@ -171,10 +181,18 @@ namespace CarDrive_1
                 if (turn_max_velocity > abs_v)
                     f_turn *= abs_v / turn_max_velocity;
 
+
+
                 if (right)
+                {
                     degree += f_turn;
+                    if (degree > 360) degree -= 360;
+                }
                 else
+                {
                     degree -= f_turn;
+                    if (degree < 0) degree += 360;
+                }
             }
 
             void lrcheck(int no)
@@ -260,6 +278,26 @@ namespace CarDrive_1
 
 
         }
+
+        public void cal_distance()
+        {
+            double bet = 15;
+            double thisdegree = degree - 90 - bet * 2;
+            int distance = 15 * 20;
+            
+            for(int i = 0;i < 5; i++) 
+            {
+                double d = thisdegree + i * bet;
+                lines[i].setPoint1((int)x, (int)y);
+                lines[i].setPoint2((int)(x + distance * Math.Cos(m.to_radian * d)), 
+                    (int)(y + distance * Math.Sin(m.to_radian * d)));
+            }
+
+            
+        }
+
+
+
 
         //방향키 입력으로 위치이동
         public void Key(string[] args)

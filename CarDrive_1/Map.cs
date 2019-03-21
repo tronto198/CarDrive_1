@@ -287,6 +287,55 @@ namespace CarDrive_1
         }
 
 
+        public void cal_distance(Line[] lines)
+        {
+            Point[] points = new Point[5];
+
+
+        }
+
+        public void check_circle(Point circle_center, double circle_size, Line line)
+        {
+            double a = (line.point1.Y - line.point2.Y) * (line.point1.Y - line.point2.Y)
+                + (line.point1.X - line.point2.X) * (line.point1.X - line.point2.X);
+            double b_half = (line.point1.X - line.point2.X) * (line.point2.X - circle_center.X)
+                + (line.point1.Y - line.point2.Y) * (line.point2.Y - circle_center.Y);
+            double c = (line.point2.X * line.point2.X - 2 * (line.point2.X * circle_center.X) 
+                + circle_center.X * circle_center.X) + (line.point2.Y * line.point2.Y 
+                - 2 * (line.point2.Y * circle_center.Y) + circle_center.Y * circle_center.Y)
+                 - circle_size * circle_size;
+
+            if(a == 0)
+            {
+                //line이 점
+            }
+
+            double dis = b_half * b_half - a * c;
+            if(dis < 0)
+            {
+                //교점 없음
+            }
+
+            double t1 = (-b_half + Math.Sqrt(dis)) / a;
+            double t2 = (-b_half - Math.Sqrt(dis)) / a;
+
+            if(t1 < 0 || t1 > 1)
+            {
+                //t1이 선분 바깥
+            }
+            if(t2 < 0 || t2 > 1)
+            {
+                //t2가 선분 바깥
+            }
+
+            PointF p1 = new PointF((float)(t1 * line.point1.X + (1 - t1) * line.point2.X),
+                (float)(t1 * line.point1.Y + (1 - t1) * line.point2.Y));
+            PointF p2 = new PointF((float)(t2 * line.point1.X + (1 - t2) * line.point2.X),
+                (float)(t2 * line.point1.Y + (1 - t2) * line.point2.Y));
+
+            double degree1 = Math.Atan((p1.Y - circle_center.Y) / (p1.X - circle_center.X));
+            double degree2 = Math.Atan((p2.Y - circle_center.Y) / (p2.X - circle_center.X));
+        }
     }
 
     //선
