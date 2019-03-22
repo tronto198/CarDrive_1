@@ -306,14 +306,15 @@ namespace CarDrive_1
         public double[] cal_distance(Line[] lines)
         {
             double[] distances = new double[5];
+            int half = TrackHeight / 2;
             for(int i = 0; i < 5; i++)
             {
                 Line l = lines[i];
                 List<PointF> pointslist = new List<PointF>();
-                check_circle(CenterLine.point1, TrackHeight, l, ref pointslist);
-                check_circle(CenterLine.point1, TrackHeight + TrackSize, l, ref pointslist);
-                check_circle(CenterLine.point2, TrackHeight, l, ref pointslist);
-                check_circle(CenterLine.point2, TrackHeight + TrackSize, l, ref pointslist);
+                check_circle(CenterLine.point1, half, l, ref pointslist);
+                check_circle(CenterLine.point1, half + TrackSize, l, ref pointslist);
+                check_circle(CenterLine.point2, half, l, ref pointslist);
+                check_circle(CenterLine.point2, half + TrackSize, l, ref pointslist);
 
                 Line trackline = new Line();
                 void cl(int height)
@@ -323,10 +324,10 @@ namespace CarDrive_1
                     check_line(trackline, l, ref pointslist);
                     
                 }
-                cl(TrackHeight);
-                cl(-TrackHeight);
-                cl(TrackHeight + TrackSize);
-                cl(-TrackHeight - TrackSize);
+                cl(half);
+                cl(-half);
+                cl(half + TrackSize);
+                cl(-half - TrackSize);
 
                 if(pointslist.Count == 0)
                 {
