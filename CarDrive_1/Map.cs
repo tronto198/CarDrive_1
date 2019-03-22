@@ -518,7 +518,16 @@ namespace CarDrive_1
         {
             if (!drawing)
             {
+                drawing = true;
                 DoubleBuffering.getinstance().callback_work += draw;
+            }
+        }
+        public virtual void unShow()
+        {
+            if (drawing)
+            {
+                drawing = false;
+                DoubleBuffering.getinstance().callback_work -= draw;
             }
         }
     }

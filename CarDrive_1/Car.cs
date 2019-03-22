@@ -109,6 +109,17 @@ namespace CarDrive_1
             left.Show();
             right.Show();
         }
+        public void unShow()
+        {
+            d.callback_work -= Draw;
+            foreach(var l in lines)
+            {
+                l.unShow();
+            }
+
+            left.unShow();
+            right.unShow();
+        }
         
         public void setLocation(Point p)
         {
@@ -141,6 +152,13 @@ namespace CarDrive_1
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
             g.ResetTransform();
 
+            Font font = new Font("휴먼편지체", 8);
+            for(int i = 0;i < 5; i++)
+            {
+                g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
+                    (float)x, (float)y - 15 * i);
+
+            }
         }
         
         //차를 어떻게 움직일지 입력

@@ -12,6 +12,8 @@ namespace CarDrive_1
         List<Car> Carlist = null;
         WinFormlib.Threading_Timer_v0 worker = null;
         int total_reward = 0;
+        public static System.Drawing.Font font = new System.Drawing.Font("휴먼편지체", 15);
+        public static System.Drawing.Brush brush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
 
         public delegate void work_thread_Handler(Car car);
         public static work_thread_Handler callback_worker;
@@ -19,8 +21,7 @@ namespace CarDrive_1
         void Draw_totalReward()
         {
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                "Reward : " + total_reward, new System.Drawing.Font("휴먼편지체", 15),
-                new System.Drawing.SolidBrush(System.Drawing.Color.Black), 600, 300); 
+                "Reward : " + total_reward, font, brush, 600, 300); 
         }
 
         public MainProgram()
@@ -56,6 +57,10 @@ namespace CarDrive_1
         }
         public void Reset(int Carnum = 1)
         {
+            foreach(Car c in Carlist)
+            {
+                c.unShow();
+            }
             Carlist.Clear();
             SetCar(Carnum);
         }
@@ -129,19 +134,20 @@ namespace CarDrive_1
             lr();
 
             //car.move(keyinput);
-            int[] onehot = new int[9];
+            /*int[] onehot = new int[9];
             for(int i = 0;i < 9; i++)
             {
                 onehot[i] = 0;
             }
             onehot[keyinput] = 1;
-            Request_Move(onehot);
+            Request_Move(onehot);*/
+            Request_Move(keyinput);
         }
 
-        public Tuple<double[], int, bool> Request_Move(int[] move_onehot)
+        public Tuple<double[], int, bool> Request_Move(int moveno)//int[] move_onehot)
         {
             //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
-            int moveno = 0;
+            /*int moveno = 0;
             for(int i = 0; i < 9;i++)
             {
                 if(move_onehot[i] == 1)
@@ -149,7 +155,7 @@ namespace CarDrive_1
                     moveno = i;
                     break;
                 }
-            }
+            }*/
             //for(int i = 0;i < move_onehot.Length;i++)
             {
                 Carlist[0].move(moveno);

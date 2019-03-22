@@ -5,9 +5,9 @@ import numpy as np
 
 import clr
 clr.AddReference("CarDrive_1")
-import CarDrive_1
+import CarDrive_1 as car
 
-import Thread_Timer
+from Thread_Timer import Thread_Timer as TT
 from threading import Timer
 
 
@@ -16,7 +16,7 @@ class DQN:
         self.session = session
         self.input_size = input_size
         self.output_size = output_size
-        self.Variable_initializer = tf.tf.contrib.layers.xavier_initializer()
+        self.Variable_initializer = tf.contrib.layers.xavier_initializer()
 
         self._build_network()
 
@@ -62,22 +62,22 @@ class Module:
 
         self.trainer = None
         self.dqn = None
-        self.CarDrive = None
+        self.CarDrive = CConnecter(numofcar)
         self.replay_buffer = deque()
 
-        self.state = [[]]
-        self.reward = []
-        self.Done = []
+        self.state = []
+        self.reward = 0
+        self.Done = False
 
         self.env_setting()
 
     def env_setting(self):
 
-        for i in range(self.numofcar):
-            self.alivecar.append(True)
+        #for i in range(self.numofcar):
+            #self.alivecar.append(True)
 
         self.dqn = DQN(tf.Session(), self.input_size, self.output_size)
-        tf.global_variables_initializer().run()
+        tf.global_variables_initializer().run(session=tf.Session())
         #카 드라이브 객체 생성 후 차 갯수 설정
         return True
 
@@ -105,8 +105,9 @@ class Module:
 
     #훈련
     def trainstart(self):
-        self.state, self.reward, self.Done = self.step(0)
-        self.trainer = Thread_Timer(self.select_action, 0.010)
+        self.CarDrive.Reset()
+        self.state, self.reward, self.Done = self.step(4)
+        self.trainer = TT(self.select_action, 0.010)
         self.trainer.start()
         while self.trainer.isalive:
             pass
@@ -130,13 +131,7 @@ class Module:
 
         self.step_count += 1
 
-        for i in len(self.Done):
-            if self.Done[i]:
-                self.state.pop(i)
-                self.reward.pop(i)
-                self.Done.pop(i)
-
-        if not self.state:
+        if self.Done:
             self.trainer.stop()
             self.play_count += 1
             print(self.play_count, " Done")
@@ -146,19 +141,42 @@ class Module:
 
     #C#과 통신
     def step(self, next_move):
-        state = [[]]
-        reward = []
-        Done = []
+        state, reward, Done = self.CarDrive.Move(next_move)
+
         return state, reward, Done
 
 
 class CConnecter:
-    def __init__(self):
-        pass
+    def __init__(self, num):
+        self.form = car.Program.ExMain()
+        self.Cmodule = self.form.getMainProgram()
+        self.Set(num)
 
-form = CarDrive_1.Program.ExMain()
+    def Set(self, carno):
+        self.Cmodule.SetCar(carno)
 
+    def Move(self, onehot):
+        ans = self.Cmodule.Request_Move(onehot)
+
+        c_state = ans.get_Item1()
+        state = []
+        for i in range(len(c_state)):
+            state.append(c_state[i])
+
+        c_reward = ans.get_Item2()
+        reward = 0 + c_reward
+        c_Done = ans.get_Item3()
+
+        return state, reward, c_Done
+
+    def Reset(self):
+        self.Cmodule.Reset()
+
+
+#form = CarDrive_1.Program.ExMain()
+module = Module(1, 7, 9)
+module.trainstart()
 
 while True:
-    print(1)
+    pass
 
