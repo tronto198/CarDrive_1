@@ -21,7 +21,10 @@ namespace CarDrive_1
         int x, y;
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
+        const int Crashreward = -500;
+        const int Bonusreward = 100;
         Line CenterLine;
+        int count = 0;
 
         DoubleBuffering Screen;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
@@ -98,7 +101,7 @@ namespace CarDrive_1
                 c0.setPoint1((p1.X + p2.X) / 2, p1.Y);
                 c0.setPoint2((p1.X + p2.X) / 2, p1.Y + size);
                 frontline.Link(c0);
-                c0.setreward(100);
+                c0.setreward(Bonusreward);
 
                 CheckLine c1 = new CheckLine();
                 c1.setPoint1(p2);
@@ -212,6 +215,7 @@ namespace CarDrive_1
         /// <param name="car">검사할 차</param>
         public void check(Car car)
         {
+            //car.reward = -1;
             //트랙에 충돌되는지
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?
@@ -221,7 +225,6 @@ namespace CarDrive_1
             //모서리 넷이 각각 안에 있는지로 판별
 
             int reward = 0;
-            const int Crashreward = -100;
 
             
 
@@ -600,7 +603,7 @@ namespace CarDrive_1
 
     class CheckLine : Line
     {
-        int reward = 10;
+        int reward = 50;
         bool activation = false;
         static Pen ActivatePen = new Pen(new SolidBrush(Color.IndianRed));
         CheckLine nextLine;

@@ -58,7 +58,7 @@ class Module:
         self.output_size = out_size
 
         self.session = tf.Session()
-        self.dis = 0.5
+        self.dis = 0.7
         self.R_Memory = 50000
         self.play_count = 0
         self.step_count = 0
@@ -112,7 +112,7 @@ class Module:
         self.state, self.reward, self.Done = self.step(4)
 
         #self.trainer = TT(self.select_action, 0.010)
-        while(True):
+        while self.CarDrive.Run:
             self.select_action()
             time.sleep(0.01)
 
@@ -124,7 +124,8 @@ class Module:
 
         e = 1. / ((self.play_count / 5) + 1)
         if np.random.rand(1) < e:
-            action = int(np.random.rand(1) // self.output_size)
+            a = np.random.rand(1) * self.output_size
+            action = int(a[0] % self.output_size)
         else:
             action = np.argmax(self.dqn.predict(self.state))
 
@@ -132,10 +133,24 @@ class Module:
 
         self.replay_buffer.append((self.state, action, self.reward, next_state, self.Done))
         self.state = next_state
+
         if len(self.replay_buffer) > self.R_Memory:
             self.replay_buffer.popleft()
 
         self.step_count += 1
+
+        if self.step_count % 1000 == 0:
+            self.replay_train()
+            print("Update")
+
+        if self.step_count > 9999999:
+            self.play_count += 1
+            print(self.play_count, " Done")
+            self.replay_train()
+            print("Update")
+            # Timer(3, self.trainstart()).start()
+            time.sleep(2)
+            self.CarDrive.Reset()
 
         if self.Done:
             #self.trainer.stop()
@@ -147,9 +162,14 @@ class Module:
             time.sleep(2)
             self.CarDrive.Reset()
 
+        if self.play_count > 50:
+            self.CarDrive.Stop()
+
     #C#과 통신
     def step(self, next_move):
         state, reward, Done = self.CarDrive.Move(next_move)
+        if(next_move == 2): print("2")
+        if(next_move == 5): print("5")
         return state, reward, Done
 
 
@@ -157,12 +177,18 @@ class CConnecter:
     def __init__(self, num):
         self.form = car.Program.ExMain()
         self.Cmodule = self.form.getMainProgram()
+        self.Run = True
         self.Set(num)
+
 
     def Set(self, carno):
         self.Cmodule.SetCar(carno)
 
     def Move(self, onehot):
+        if(self.Cmodule == None):
+            self.Stop()
+            return
+
         ans = self.Cmodule.Request_Move(onehot)
 
         c_state = ans.get_Item1()
@@ -179,9 +205,13 @@ class CConnecter:
     def Reset(self):
         self.Cmodule.Reset()
 
+    def Stop(self):
+        self.Run = False
+        self.form.close()
+
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(1, 7, 9)
+module = Module(1, 7, 6)
 module.trainstart()
 
 

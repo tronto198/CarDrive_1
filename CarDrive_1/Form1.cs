@@ -106,5 +106,20 @@ namespace CarDrive_1
             if (testint++ % 10000 == 0)
                 testint -= 5000;
         }
+        public void link(object obj)
+        {
+            Action a = obj as Action;
+            this.FormClosed += delegate(object sender, FormClosedEventArgs e) { a(); };
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            //Main_Program.formclose();
+        }
+
+        public void close()
+        {
+            this.Close();
+        }
     }
 }
