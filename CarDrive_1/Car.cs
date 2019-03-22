@@ -101,12 +101,13 @@ namespace CarDrive_1
         public void Show()
         {
             d.callback_work += Draw;
-            left.Show();
-            right.Show();
             foreach (var l in lines)
             {
                 l.Show();
             }
+
+            left.Show();
+            right.Show();
         }
         
         public void setLocation(Point p)
@@ -269,6 +270,8 @@ namespace CarDrive_1
 
         public void car_vertex(out Line _left, out Line _right)// 앞부분 가운데, 뒷부분 가운데 점의 좌표 **검증필요**
         {
+
+            /*
             double x_f, y_f, x_b, y_b;//실제 사용할 좌표
             double x_f_i, y_f_i, x_b_i, y_b_i;//초기값
             Point real_center = new Point((int)x, (int)y);
@@ -291,11 +294,6 @@ namespace CarDrive_1
             // a = (y_f - y_b) / (x_f - x_b);//기울기
             // b = y_f - a * x_f;//y절편
 
-            //
-            //1   3
-            //
-            //2   4
-            //
 
             double x_1, y_1, x_2, y_2, x_3, y_3, x_4, y_4;
             //초기값 설정
@@ -317,6 +315,29 @@ namespace CarDrive_1
             y_3 = (x_3 - real_center.X) * Math.Sin(degree) + (y_3 - real_center.Y) * Math.Cos(degree) + real_center.Y;
             x_4 = (x_4 - real_center.X) * Math.Cos(degree) - (y_4 - real_center.Y) * Math.Sin(degree) + real_center.X;
             y_4 = (x_4 - real_center.X) * Math.Sin(degree) + (y_4 - real_center.Y) * Math.Cos(degree) + real_center.Y;
+
+            */
+
+            //
+            //1   3
+            //
+            //2   4
+            //
+            double length = Math.Sqrt(center.X * center.X + center.Y * center.Y) - 2;
+            double degree = this.degree + 90;
+            double d_fr = Math.Atan(center.Y / center.X) * m.to_degree + 90;
+            double d_fl = -d_fr;
+            double d_br = 180 + d_fl;
+            double d_bl = 180 + d_fr;
+
+            double x_1 = x + length * Math.Cos((d_fl + degree) * m.to_radian);
+            double y_1 = y + length * Math.Sin((d_fl + degree) * m.to_radian);
+            double x_2 = x + length * Math.Cos((d_bl + degree) * m.to_radian);
+            double y_2 = y + length * Math.Sin((d_bl + degree) * m.to_radian);
+            double x_3 = x + length * Math.Cos((d_fr + degree) * m.to_radian);
+            double y_3 = y + length * Math.Sin((d_fr + degree) * m.to_radian);
+            double x_4 = x + length * Math.Cos((d_br + degree) * m.to_radian);
+            double y_4 = y + length * Math.Sin((d_br + degree) * m.to_radian);
 
             left.setPoint1(x_1, y_1);
             left.setPoint2(x_2, y_2);

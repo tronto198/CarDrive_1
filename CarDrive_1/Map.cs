@@ -291,7 +291,8 @@ namespace CarDrive_1
         void Crashed(Car car, int reward)
         {
             //차에 함수 만들기
-            car.reward = reward;
+            if(!car.done)
+                car.reward = reward;
             car.done = true;
         }
 
@@ -615,6 +616,7 @@ namespace CarDrive_1
     {
         //degree to radian
         public const double to_radian = Math.PI / 180;
+        public const double to_degree = 180 / Math.PI;
         public static double getLength(Point p1, Point p2)
         {
             return Math.Sqrt((double)((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));

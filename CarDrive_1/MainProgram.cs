@@ -11,15 +11,24 @@ namespace CarDrive_1
         Map map = null;
         List<Car> Carlist = null;
         WinFormlib.Threading_Timer_v0 worker = null;
+        int total_reward = 0;
 
         public delegate void work_thread_Handler(Car car);
         public static work_thread_Handler callback_worker;
+
+        void Draw_totalReward()
+        {
+            WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
+                "Reward : " + total_reward, new System.Drawing.Font("휴먼편지체", 15),
+                new System.Drawing.SolidBrush(System.Drawing.Color.Black), 600, 300); 
+        }
 
         public MainProgram()
         {
             Carlist = new List<Car>();
             
             makeMap();
+            WinFormlib.DoubleBuffering.getinstance().callback_work += Draw_totalReward;
 
             callback_worker += map.check;
         }
@@ -56,32 +65,47 @@ namespace CarDrive_1
         public void Thread_worker()
         {
             foreach (Car car in Carlist)
-                callback_worker(car);
+            {
+                //callback_worker(car);
+                
+            }
+
         }
 
         //이 프로그램을 C#으로 테스트할때 실행
         public void TestwithKeyinput()
         {
             SetCar(1);
+            WinFormlib.Key_input.Key_in += delegate (System.Windows.Forms.Keys key)
+            {
+                if(key == System.Windows.Forms.Keys.R)
+                {
+                    Reset();
+                }
+            };
             bindKey();
-            worker = new WinFormlib.Threading_Timer_v0();
-            worker.setInterval(10);
-            worker.setCallback(Thread_worker);
+            //worker = new WinFormlib.Threading_Timer_v0();
+            //worker.setInterval(10);
+            //worker.setCallback(Thread_worker);
 
-            worker.Start();
+            //worker.Start();
         }
 
         //키보드 입력과 연결시키는 함수
         void bindKey()
         {
-            callback_worker += reactKey;
+            //callback_worker += reactKey;
+            WinFormlib.Threading_Timer_v0 keyinputworker = new WinFormlib.Threading_Timer_v0();
+            keyinputworker.setInterval(10);
+            keyinputworker.setCallback(reactKey);
+            keyinputworker.Start();
         }
 
         //눌린 키에 반응하는 함수
-        void reactKey(Car car)
+        void reactKey()//Car car)
         {
             WinFormlib.Key_input key = WinFormlib.Key_input.getinstance();
-            int keyinput = 0;
+            int keyinput = 4;
             /// 0  1  2
             /// 3  4  5
             /// 6  7  8
@@ -104,15 +128,31 @@ namespace CarDrive_1
             else keyinput = 4;
             lr();
 
-            car.move(keyinput);
+            //car.move(keyinput);
+            int[] onehot = new int[9];
+            for(int i = 0;i < 9; i++)
+            {
+                onehot[i] = 0;
+            }
+            onehot[keyinput] = 1;
+            Request_Move(onehot);
         }
 
         public Tuple<double[], int, bool> Request_Move(int[] move_onehot)
         {
             //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
+            int moveno = 0;
+            for(int i = 0; i < 9;i++)
+            {
+                if(move_onehot[i] == 1)
+                {
+                    moveno = i;
+                    break;
+                }
+            }
             //for(int i = 0;i < move_onehot.Length;i++)
             {
-                Carlist[0].move(move_onehot[0]);
+                Carlist[0].move(moveno);
                 callback_worker(Carlist[0]);
                 
             }
@@ -123,7 +163,9 @@ namespace CarDrive_1
             t[0] = v;
             t[1] = degree;
             distance.CopyTo(t, 2);
-            Tuple<double[], int, bool> ans = new Tuple<double[], int, bool>(t, Carlist[0].getreward(), Carlist[0].done);
+            int reward = Carlist[0].getreward();
+            this.total_reward += reward;
+            Tuple<double[], int, bool> ans = new Tuple<double[], int, bool>(t, reward, Carlist[0].done);
 
             return ans;
         }
