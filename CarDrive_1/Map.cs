@@ -28,6 +28,7 @@ namespace CarDrive_1
 
         List<CheckLine> Linelist = new List<CheckLine>();
         CheckLine currentgoal = null;
+        CheckLine firstgoal = null;
 
 
         Point Startpoint = new Point();
@@ -72,6 +73,12 @@ namespace CarDrive_1
             Startpoint.X = (int)((CenterLine.point1.X + CenterLine.point2.X) / 2);
             Startpoint.Y = (int)(CenterLine.point1.Y + half + TrackSize / 2);
 
+        }
+        public void Reset()
+        {
+            currentgoal.unActivate();
+            firstgoal.Activate();
+            currentgoal = firstgoal;
         }
 
         void makeCheckLines()
@@ -136,10 +143,10 @@ namespace CarDrive_1
 
 
 
-            CheckLine firstline = make(lastline, new PointF(CenterLine.point1.X, CenterLine.point1.Y + half),
+            firstgoal = make(lastline, new PointF(CenterLine.point1.X, CenterLine.point1.Y + half),
                  new PointF(CenterLine.point2.X, CenterLine.point2.Y + half), true);
 
-            CheckLine line2 = make_round(firstline, CenterLine.point2, 0, 180);
+            CheckLine line2 = make_round(firstgoal, CenterLine.point2, 0, 180);
             CheckLine line3 = new CheckLine();
             line3.setPoint1(CenterLine.point2.X, CenterLine.point2.Y - half);
             line3.setPoint2(CenterLine.point2.X, CenterLine.point2.Y - half - TrackSize);
@@ -153,8 +160,8 @@ namespace CarDrive_1
             line5.Link(lastline);
 
 
-            firstline.Activate();
-            currentgoal = firstline;
+            firstgoal.Activate();
+            currentgoal = firstgoal;
 
             Linelist.Add(lastline);
 
@@ -168,7 +175,6 @@ namespace CarDrive_1
         {
             Screen.callback_work += Draw;
         }
-
         void Draw()
         {
             //트랙을 그리는 작업을 함수로 지정
@@ -311,10 +317,10 @@ namespace CarDrive_1
             {
                 Line l = lines[i];
                 List<PointF> pointslist = new List<PointF>();
-                check_circle(CenterLine.point1, half, l, ref pointslist);
-                check_circle(CenterLine.point1, half + TrackSize, l, ref pointslist);
-                check_circle(CenterLine.point2, half, l, ref pointslist);
-                check_circle(CenterLine.point2, half + TrackSize, l, ref pointslist);
+                check_circle(CenterLine.point1, half, 90, 180, l, ref pointslist);
+                check_circle(CenterLine.point1, half + TrackSize, 90, 180, l, ref pointslist);
+                check_circle(CenterLine.point2, half, 270, 180, l, ref pointslist);
+                check_circle(CenterLine.point2, half + TrackSize, 270, 180, l, ref pointslist);
 
                 Line trackline = new Line();
                 void cl(int height)
@@ -357,7 +363,7 @@ namespace CarDrive_1
             return distances;
         }
 
-        void check_circle(PointF circle_center, double circle_size, Line line, ref List<PointF> list)
+        void check_circle(PointF circle_center, double circle_size, int startdegree, int sweepdegree, Line line, ref List<PointF> list)
         {
             double a = (line.point1.Y - line.point2.Y) * (line.point1.Y - line.point2.Y)
                 + (line.point1.X - line.point2.X) * (line.point1.X - line.point2.X);
@@ -385,6 +391,56 @@ namespace CarDrive_1
             double t1 = (-b_half + Math.Sqrt(dis)) / a;
             double t2 = (-b_half - Math.Sqrt(dis)) / a;
 
+
+
+
+            double degreeset(double d)
+            {
+                if (d < 0)
+                {
+                    while(d < 0) d += 360;
+                }
+                else if (d > 360)
+                {
+                    while(d > 360) d -= 360;
+                }
+                return d;
+            }
+
+            double cal_degree(double dx, double dy)
+            {
+                double d = Math.Atan(dx / dy) * m.to_degree + 90;
+                if (dy > 0) d += 180;
+                d = degreeset(d);
+                
+                return d;
+            }
+
+            bool check_degree(double degree)
+            {
+                double start_d = degreeset(startdegree);
+                double end_d = degreeset(startdegree + sweepdegree);
+                
+                if(end_d < start_d)
+                {
+                    if(degree < end_d || degree > start_d)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if(start_d < degree && degree < end_d)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+
+
+
             if(t1 < 0 || t1 > 1)
             {
                 //t1이 선분 바깥
@@ -393,8 +449,8 @@ namespace CarDrive_1
             {
                 PointF p1 = new PointF((float)(t1 * line.point1.X + (1 - t1) * line.point2.X),
                     (float)(t1 * line.point1.Y + (1 - t1) * line.point2.Y));
-                //double degree1 = Math.Atan((p1.Y - circle_center.Y) / (p1.X - circle_center.X));
-                list.Add(p1);
+                double degree1 = cal_degree(p1.X - circle_center.X, p1.Y - circle_center.Y);
+                if(check_degree(degree1)) list.Add(p1);
             }
             if (t2 < 0 || t2 > 1)
             {
@@ -404,8 +460,8 @@ namespace CarDrive_1
             {
                 PointF p2 = new PointF((float)(t2 * line.point1.X + (1 - t2) * line.point2.X),
                     (float)(t2 * line.point1.Y + (1 - t2) * line.point2.Y));
-                //double degree2 = Math.Atan((p2.Y - circle_center.Y) / (p2.X - circle_center.X));
-                list.Add(p2);
+                double degree2 = cal_degree(p2.X - circle_center.X, p2.Y - circle_center.Y);
+                if (check_degree(degree2)) list.Add(p2);
             }
 
 
@@ -546,7 +602,7 @@ namespace CarDrive_1
     {
         int reward = 10;
         bool activation = false;
-        static Pen ActivatePen = new Pen(new SolidBrush(Color.Green));
+        static Pen ActivatePen = new Pen(new SolidBrush(Color.IndianRed));
         CheckLine nextLine;
 
         public CheckLine()
@@ -577,6 +633,10 @@ namespace CarDrive_1
         public void Activate()
         {
             activation = true;
+        }
+        public void unActivate()
+        {
+            activation = false;
         }
         
 
