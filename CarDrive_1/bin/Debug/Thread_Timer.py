@@ -8,6 +8,7 @@ class Thread_Timer:
         self.Action = method
         self.Interval = interval
         self.isalive = False
+        self.Running = False
 
     def set(self, method, interval=1):
         self.Action = method
@@ -15,11 +16,13 @@ class Thread_Timer:
 
     def start(self):
         self.isalive = True
-
         def t():
-            if self.isalive:
-                threading.Timer(self.Interval, t).start()
-            self.Action()
+            if not self.Running:
+                self.Running = True
+                if self.isalive:
+                    threading.Timer(self.Interval, t).start()
+                self.Action()
+                self.Running = False
 
 
         t()

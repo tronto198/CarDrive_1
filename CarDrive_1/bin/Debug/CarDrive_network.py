@@ -1,3 +1,5 @@
+import time
+
 import tensorflow as tf
 import random
 from collections import deque
@@ -55,12 +57,13 @@ class Module:
         self.input_size = in_size
         self.output_size = out_size
 
+        self.session = tf.Session()
         self.dis = 0.5
         self.R_Memory = 50000
         self.play_count = 0
         self.step_count = 0
 
-        self.trainer = None
+        #self.trainer = None
         self.dqn = None
         self.CarDrive = CConnecter(numofcar)
         self.replay_buffer = deque()
@@ -76,8 +79,8 @@ class Module:
         #for i in range(self.numofcar):
             #self.alivecar.append(True)
 
-        self.dqn = DQN(tf.Session(), self.input_size, self.output_size)
-        tf.global_variables_initializer().run(session=tf.Session())
+        self.dqn = DQN(self.session, self.input_size, self.output_size)
+        tf.global_variables_initializer().run(session=self.session)
         #카 드라이브 객체 생성 후 차 갯수 설정
         return True
 
@@ -100,17 +103,20 @@ class Module:
 
                 x_stack = np.vstack([x_stack, state])
                 y_stack = np.vstack([y_stack, Q])
-            loss, _ = self.dqn.update()
+            loss, _ = self.dqn.update(x_stack, y_stack)
             print("Loss : ", loss)
 
     #훈련
     def trainstart(self):
         self.CarDrive.Reset()
         self.state, self.reward, self.Done = self.step(4)
-        self.trainer = TT(self.select_action, 0.010)
-        self.trainer.start()
-        while self.trainer.isalive:
-            pass
+
+        #self.trainer = TT(self.select_action, 0.010)
+        while(True):
+            self.select_action()
+            time.sleep(0.01)
+
+        #self.trainer.start()
 
     #실제 실행되는 코드 - 액션을 선택하고 결과를 리턴받음
     def select_action(self):
@@ -118,7 +124,7 @@ class Module:
 
         e = 1. / ((self.play_count / 5) + 1)
         if np.random.rand(1) < e:
-            action = np.random.rand(1) % self.output_size
+            action = int(np.random.rand(1) // self.output_size)
         else:
             action = np.argmax(self.dqn.predict(self.state))
 
@@ -132,17 +138,18 @@ class Module:
         self.step_count += 1
 
         if self.Done:
-            self.trainer.stop()
+            #self.trainer.stop()
             self.play_count += 1
             print(self.play_count, " Done")
             self.replay_train()
             print("Update")
-            Timer(3, self.trainstart()).start()
+            #Timer(3, self.trainstart()).start()
+            time.sleep(2)
+            self.CarDrive.Reset()
 
     #C#과 통신
     def step(self, next_move):
         state, reward, Done = self.CarDrive.Move(next_move)
-
         return state, reward, Done
 
 
@@ -159,9 +166,9 @@ class CConnecter:
         ans = self.Cmodule.Request_Move(onehot)
 
         c_state = ans.get_Item1()
-        state = []
+        state = [[]]
         for i in range(len(c_state)):
-            state.append(c_state[i])
+            state[0].append(c_state[i])
 
         c_reward = ans.get_Item2()
         reward = 0 + c_reward
@@ -177,6 +184,4 @@ class CConnecter:
 module = Module(1, 7, 9)
 module.trainstart()
 
-while True:
-    pass
 
