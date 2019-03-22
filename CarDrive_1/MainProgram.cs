@@ -40,12 +40,18 @@ namespace CarDrive_1
                 Car car = new Car();
                 Carlist.Add(car);
                 car.setLocation(map.getStartPoint());
-                car.setDegree(0);
+                car.setDegree(map.getStartDegree());
                 car.Show();
                 car.setSize();
             }
         }
+        public void Reset(int Carnum = 1)
+        {
+            Carlist.Clear();
+            SetCar(Carnum);
+        }
 
+        //파이선 스레드에서 move후에 threadworker실행 XX
         //나중에 파이썬 쓰레드에서 실행, 또는 C# 테스트용 스레드에서 실행
         public void Thread_worker()
         {
@@ -101,15 +107,27 @@ namespace CarDrive_1
             car.move(keyinput);
         }
 
-        /*public Tuple<double[][], int[], bool[]> Request_Move(int[] move_onehot)
+        public Tuple<double[], int, bool> Request_Move(int[] move_onehot)
         {
-            
-            for(int i = 0;i < move_onehot.Length;i++)
+            //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
+            //for(int i = 0;i < move_onehot.Length;i++)
             {
-                //Car.move(move_onehot[i]);
+                Carlist[0].move(move_onehot[0]);
+                callback_worker(Carlist[0]);
+                
             }
+            double v = Carlist[0].getv();
+            double degree = Carlist[0].getdegree();
+            double[] distance = Carlist[0].getdistances();
+            double[] t = new double[7];
+            t[0] = v;
+            t[1] = degree;
+            distance.CopyTo(t, 2);
+            Tuple<double[], int, bool> ans = new Tuple<double[], int, bool>(t, Carlist[0].getreward(), Carlist[0].done);
 
-            
-        }*/
+            return ans;
+        }
+
+
     }
 }

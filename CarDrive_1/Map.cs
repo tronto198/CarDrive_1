@@ -69,8 +69,8 @@ namespace CarDrive_1
 
             makeCheckLines();
 
-            Startpoint.X = (CenterLine.point1.X + CenterLine.point2.X) / 2;
-            Startpoint.Y = CenterLine.point1.Y + half + TrackSize / 2;
+            Startpoint.X = (int)((CenterLine.point1.X + CenterLine.point2.X) / 2);
+            Startpoint.Y = (int)(CenterLine.point1.Y + half + TrackSize / 2);
 
         }
 
@@ -79,7 +79,7 @@ namespace CarDrive_1
             int half = TrackHeight / 2;
 
             //센터라인 양끝과 중앙, 반원형 1/3, 2/3 지점에 체크라인
-            CheckLine make(CheckLine frontline, Point p1, Point p2, bool plus)
+            CheckLine make(CheckLine frontline, PointF p1, PointF p2, bool plus)
             {
                 int size = TrackSize;
                 if (!plus)
@@ -104,16 +104,17 @@ namespace CarDrive_1
                 return c1;
             }
 
-            CheckLine make_round(CheckLine frontline, Point center, int startdegree, int enddegree)
+            CheckLine make_round(CheckLine frontline, PointF center, int startdegree, int enddegree)
             {
-                double radian_1 = m.to_radian * (startdegree + (enddegree - startdegree) / 3 * 2);
-                double radian_2 = m.to_radian * (startdegree + (enddegree - startdegree) / 3);
+                double radian_1 = m.to_radian * (startdegree + (enddegree - startdegree) / 3);
+                double radian_2 = m.to_radian * (startdegree + (enddegree - startdegree) / 3 * 2);
+
                 CheckLine c0 = new CheckLine();
                 c0.setPoint1((int)(center.X + Math.Sin(radian_1) * half),
                     (int)(center.Y + Math.Cos(radian_1) * half));
                 c0.setPoint2((int)(center.X + Math.Sin(radian_1) * (half + TrackSize)),
                     (int)(center.Y + Math.Cos(radian_1) * (half + TrackSize)));
-                frontline.Link(frontline);
+                frontline.Link(c0);
 
                 CheckLine c1 = new CheckLine();
                 c1.setPoint1((int)(center.X + Math.Sin(radian_2) * half),
@@ -135,8 +136,8 @@ namespace CarDrive_1
 
 
 
-            CheckLine firstline = make(lastline, new Point(CenterLine.point1.X, CenterLine.point1.Y + half),
-                 new Point(CenterLine.point2.X, CenterLine.point2.Y + half), true);
+            CheckLine firstline = make(lastline, new PointF(CenterLine.point1.X, CenterLine.point1.Y + half),
+                 new PointF(CenterLine.point2.X, CenterLine.point2.Y + half), true);
 
             CheckLine line2 = make_round(firstline, CenterLine.point2, 0, 180);
             CheckLine line3 = new CheckLine();
@@ -145,8 +146,8 @@ namespace CarDrive_1
             line2.Link(line3);
             Linelist.Add(line3);
 
-            CheckLine line4 = make(line3, new Point(CenterLine.point2.X, CenterLine.point2.Y - half),
-                new Point(CenterLine.point1.X, CenterLine.point1.Y - half), false);
+            CheckLine line4 = make(line3, new PointF(CenterLine.point2.X, CenterLine.point2.Y - half),
+                new PointF(CenterLine.point1.X, CenterLine.point1.Y - half), false);
 
             CheckLine line5 = make_round(line4, CenterLine.point1, 180, 360);
             line5.Link(lastline);
@@ -173,21 +174,21 @@ namespace CarDrive_1
             //트랙을 그리는 작업을 함수로 지정
             void work(int Size)     // Size = 양끝 원의 크기(지름 이면서 트랙의 y축 크기)
             {
-                int half = Size / 2;    //반지름, 센터라인에서 위아래의 직선라인까지의 거리
+                double half = Size / 2;    //반지름, 센터라인에서 위아래의 직선라인까지의 거리
 
-                int x1 = CenterLine.point1.X;
-                int y1 = CenterLine.point1.Y;
-                int x2 = CenterLine.point2.X;
-                int y2 = CenterLine.point2.Y;
+                double x1 = CenterLine.point1.X;
+                double y1 = CenterLine.point1.Y;
+                double x2 = CenterLine.point2.X;
+                double y2 = CenterLine.point2.Y;
                 
 
                 //위아래 직선라인 그리기
-                Screen.getGraphics.DrawLine(thispen, x1, y1 - half, x2, y2 - half);
-                Screen.getGraphics.DrawLine(thispen, x1, y1 + half, x2, y2 + half);
+                Screen.getGraphics.DrawLine(thispen, (float)x1, (float)(y1 - half), (float)x2, (float)(y2 - half));
+                Screen.getGraphics.DrawLine(thispen, (float)x1, (float)(y1 + half), (float)x2, (float)(y2 + half));
 
                 //양끝 반원들 그리기
-                Screen.getGraphics.DrawArc(thispen, x1 - half, y1 - half, Size, Size, 90, 180);
-                Screen.getGraphics.DrawArc(thispen, x2 - half, y2 - half, Size, Size, 270, 180);
+                Screen.getGraphics.DrawArc(thispen, (float)(x1 - half), (float)(y1 - half), Size, Size, 90, 180);
+                Screen.getGraphics.DrawArc(thispen, (float)(x2 - half), (float)(y2 - half), Size, Size, 270, 180);
                 
             }
 
@@ -219,7 +220,7 @@ namespace CarDrive_1
             
 
             //한 점이 트랙 안에 정상적으로 있는지 판별 (참이면 정상, 거짓이면 충돌)
-            bool checkCrash(Point p)
+            bool checkCrash(PointF p)
             {
                 //센터라인에서부터 half만큼 떨어진 곳이 트랙
                 //추가로 TrackSize만큼 떨어진곳이 트랙의 바깥쪽
@@ -256,7 +257,7 @@ namespace CarDrive_1
                 }
                 else //직선 라인일때
                 {
-                    int abs = Math.Abs(p.Y - y);  //CenterLine과 점과의 거리
+                    float abs = Math.Abs(p.Y - y);  //CenterLine과 점과의 거리
                     return CatchCrash(abs);
                 }
 
@@ -271,7 +272,18 @@ namespace CarDrive_1
                 Bonus(car, reward);
             }
 
-            //checkCrash 4번, 보너스 2번 실행
+            //충돌 감지
+            Line left, right;
+            car.car_vertex(out left, out right);
+            if (!checkCrash(left.point1)) Crashed(car, reward);
+            else if (!checkCrash(left.point2)) Crashed(car, reward);
+            else if (!checkCrash(right.point1)) Crashed(car, reward);
+            else if (!checkCrash(right.point2)) Crashed(car, reward);
+
+            //거리 계산
+            Line[] lines = car.getlines();
+            double[] distance = cal_distance(lines);
+            car.setdistance(distance);
 
 
         }
@@ -279,22 +291,63 @@ namespace CarDrive_1
         void Crashed(Car car, int reward)
         {
             //차에 함수 만들기
+            car.reward = reward;
+            car.done = true;
         }
 
         void Bonus(Car car, int reward)
         {
             //차에 함수 만들기
+            car.reward = reward;
         }
 
-
-        public void cal_distance(Line[] lines)
+        //거리가 닿지 않으면 -1
+        public double[] cal_distance(Line[] lines)
         {
-            Point[] points = new Point[5];
+            double[] distances = new double[5];
+            for(int i = 0; i < 5; i++)
+            {
+                Line l = lines[i];
+                List<PointF> pointslist = new List<PointF>();
+                check_circle(CenterLine.point1, TrackHeight, l, ref pointslist);
+                check_circle(CenterLine.point1, TrackHeight + TrackSize, l, ref pointslist);
+                check_circle(CenterLine.point2, TrackHeight, l, ref pointslist);
+                check_circle(CenterLine.point2, TrackHeight + TrackSize, l, ref pointslist);
 
+                Line trackline = new Line();
+                void cl(int height)
+                {
+                    trackline.setPoint1(CenterLine.point1.X, CenterLine.point1.Y - height);
+                    trackline.setPoint2(CenterLine.point2.X, CenterLine.point2.Y - height);
+                    check_line(trackline, l, ref pointslist);
+                    
+                }
+                cl(TrackHeight);
+                cl(-TrackHeight);
+                cl(TrackHeight + TrackSize);
+                cl(-TrackHeight - TrackSize);
 
+                if(pointslist.Count == 0)
+                {
+                    distances[i] = -1;
+                    continue;
+                }
+                double d = m.getLength(l.point1, pointslist[0]);
+                for(int j = 1; j < pointslist.Count; j++)
+                {
+                    double test_d = m.getLength(l.point1, pointslist[j]);
+                    if(d > test_d)
+                    {
+                        d = test_d;
+                    }
+                }
+                distances[i] = d;
+            }
+
+            return distances;
         }
 
-        public void check_circle(Point circle_center, double circle_size, Line line)
+        void check_circle(PointF circle_center, double circle_size, Line line, ref List<PointF> list)
         {
             double a = (line.point1.Y - line.point2.Y) * (line.point1.Y - line.point2.Y)
                 + (line.point1.X - line.point2.X) * (line.point1.X - line.point2.X);
@@ -304,16 +357,19 @@ namespace CarDrive_1
                 + circle_center.X * circle_center.X) + (line.point2.Y * line.point2.Y 
                 - 2 * (line.point2.Y * circle_center.Y) + circle_center.Y * circle_center.Y)
                  - circle_size * circle_size;
+            
 
             if(a == 0)
             {
                 //line이 점
+                return;
             }
 
             double dis = b_half * b_half - a * c;
             if(dis < 0)
             {
                 //교점 없음
+                return;
             }
 
             double t1 = (-b_half + Math.Sqrt(dis)) / a;
@@ -323,32 +379,52 @@ namespace CarDrive_1
             {
                 //t1이 선분 바깥
             }
-            if(t2 < 0 || t2 > 1)
+            else
+            {
+                PointF p1 = new PointF((float)(t1 * line.point1.X + (1 - t1) * line.point2.X),
+                    (float)(t1 * line.point1.Y + (1 - t1) * line.point2.Y));
+                //double degree1 = Math.Atan((p1.Y - circle_center.Y) / (p1.X - circle_center.X));
+                list.Add(p1);
+            }
+            if (t2 < 0 || t2 > 1)
             {
                 //t2가 선분 바깥
             }
+            else
+            {
+                PointF p2 = new PointF((float)(t2 * line.point1.X + (1 - t2) * line.point2.X),
+                    (float)(t2 * line.point1.Y + (1 - t2) * line.point2.Y));
+                //double degree2 = Math.Atan((p2.Y - circle_center.Y) / (p2.X - circle_center.X));
+                list.Add(p2);
+            }
 
-            PointF p1 = new PointF((float)(t1 * line.point1.X + (1 - t1) * line.point2.X),
-                (float)(t1 * line.point1.Y + (1 - t1) * line.point2.Y));
-            PointF p2 = new PointF((float)(t2 * line.point1.X + (1 - t2) * line.point2.X),
-                (float)(t2 * line.point1.Y + (1 - t2) * line.point2.Y));
 
-            double degree1 = Math.Atan((p1.Y - circle_center.Y) / (p1.X - circle_center.X));
-            double degree2 = Math.Atan((p2.Y - circle_center.Y) / (p2.X - circle_center.X));
+            return;
+
+        }
+
+        void check_line(Line track, Line line, ref List<PointF> list)
+        {
+            PointF p = new PointF();
+            if(track.CrossLIne(line, ref p))
+            {
+                list.Add(p);
+            }
+            return;
         }
     }
 
     //선
-    class Line
+    public class Line
     {
-        private Point p1, p2;
+        private PointF p1, p2;
         private double length;
         protected static Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
         protected bool drawing = false;
         //얘네는 숨기고
 
-        public Point point1 { get { return p1; } }
-        public Point point2 { get { return p2; } }
+        public PointF point1 { get { return p1; } }
+        public PointF point2 { get { return p2; } }
         public double Length { get { return length; } }
         //이렇게 하면 함수를 쓰지 않고 읽기 전용으로 가능 
         //함수로 부르지 않고 편하게 쓰고 싶지만 바뀌어서는 안되는 것들을 쓰면 좋은듯?
@@ -359,10 +435,10 @@ namespace CarDrive_1
         /// </summary>
         /// <param name="_x1"></param>
         /// <param name="_y1"></param>
-        public void setPoint1(int _x1, int _y1)
+        public void setPoint1(double _x1, double _y1)
         {
-            p1.X = _x1;
-            p1.Y = _y1;
+            p1.X = (float)_x1;
+            p1.Y = (float)_y1;
             getLength();
         }
 
@@ -370,7 +446,7 @@ namespace CarDrive_1
         /// 첫번째 끝점 지정
         /// </summary>
         /// <param name="p"></param>
-        public void setPoint1(Point p)
+        public void setPoint1(PointF p)
         {
             setPoint1(p.X, p.Y);
         }
@@ -380,10 +456,10 @@ namespace CarDrive_1
         /// </summary>
         /// <param name="_x2"></param>
         /// <param name="_y2"></param>
-        public void setPoint2(int _x2, int _y2)
+        public void setPoint2(double _x2, double _y2)
         {
-            p2.X = _x2;
-            p2.Y = _y2;
+            p2.X = (float)_x2;
+            p2.Y = (float)_y2;
             getLength();
         }
 
@@ -391,7 +467,7 @@ namespace CarDrive_1
         /// 두번째 끝점 지정
         /// </summary>
         /// <param name="p"></param>
-        public void setPoint2(Point p)
+        public void setPoint2(PointF p)
         {
             setPoint2(p.X, p.Y);
         }
@@ -408,7 +484,7 @@ namespace CarDrive_1
 
         //두 선분의 교점 구하기 (여기서는 겹치는지만)
         //출처 : http://www.gisdeveloper.co.kr/?p=89
-        public bool CrossLIne(Line l, ref Point p)
+        public bool CrossLIne(Line l, ref PointF p)
         {
             double t;
             double s;
@@ -427,20 +503,21 @@ namespace CarDrive_1
 
             if (t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0) return false;
             
-            p.X = (int)(p1.X + t * (double)(p2.X - p1.X));
-            p.Y = (int)(p1.Y + t * (double)(p2.Y - p1.Y));
+            p.X = (float)(p1.X + t * (double)(p2.X - p1.X));
+            p.Y = (float)(p1.Y + t * (double)(p2.Y - p1.Y));
             return true;
         }
 
+        public void draw()
+        {
+            DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, p1, p2);
+        }
         
         public virtual void Show()
         {
             if (!drawing)
             {
-                DoubleBuffering.getinstance().callback_work += delegate ()
-                {
-                    DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, p1, p2);
-                };
+                DoubleBuffering.getinstance().callback_work += draw;
             }
         }
     }
@@ -488,7 +565,15 @@ namespace CarDrive_1
         {
             if (!activation) throw new Exception("활성화되지 않은 라인!");
 
-            if (false)
+            Line left, right;
+            car.car_vertex(out left, out right);
+            bool b = false;
+            PointF crashedPoint = new PointF();
+            if (left.CrossLIne(this, ref crashedPoint)) b = true;
+            else if (right.CrossLIne(this, ref crashedPoint)) b = true;
+
+
+            if (b)
             {
                 activation = false;
                 nextLine.activation = true;
@@ -502,6 +587,8 @@ namespace CarDrive_1
                 line = this;
                 return false;
             }
+               
+            
         }
 
         public override void Show()
@@ -529,6 +616,10 @@ namespace CarDrive_1
         //degree to radian
         public const double to_radian = Math.PI / 180;
         public static double getLength(Point p1, Point p2)
+        {
+            return Math.Sqrt((double)((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));
+        }
+        public static double getLength(PointF p1, PointF p2)
         {
             return Math.Sqrt((double)((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));
         }
