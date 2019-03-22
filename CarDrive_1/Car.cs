@@ -105,7 +105,6 @@ namespace CarDrive_1
             {
                 l.Show();
             }
-
             left.Show();
             right.Show();
         }
@@ -156,7 +155,7 @@ namespace CarDrive_1
             for(int i = 0;i < 5; i++)
             {
                 g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
-                    (float)x, (float)y - 15 * i);
+                    (float)x, (float)y - 15 * 4 + 15 * i);
 
             }
         }

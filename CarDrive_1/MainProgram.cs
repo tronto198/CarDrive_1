@@ -62,6 +62,9 @@ namespace CarDrive_1
                 c.unShow();
             }
             Carlist.Clear();
+
+            total_reward = 0;
+
             SetCar(Carnum);
         }
 

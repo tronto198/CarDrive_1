@@ -343,6 +343,14 @@ namespace CarDrive_1
                     }
                 }
                 distances[i] = d;
+
+                DoubleBuffering.getinstance().callback_work += delegate ()
+                {
+                    foreach (PointF pf in pointslist)
+                    {
+                        DoubleBuffering.getinstance().getGraphics.DrawRectangle(new Pen(MainProgram.brush), pf.X, pf.Y, 3, 3);
+                    }
+                };
             }
 
             return distances;
