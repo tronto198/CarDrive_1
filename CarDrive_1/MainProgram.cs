@@ -11,7 +11,7 @@ namespace CarDrive_1
         Map map = null;
         List<Car> Carlist = null;
         WinFormlib.Threading_Timer_v0 worker = null;
-        int total_reward = 0;
+        double total_reward = 0;
         int play_count = 0;
         bool running = false;
         object Carlist_locker = new object();
@@ -28,20 +28,20 @@ namespace CarDrive_1
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
                 "Reset to 'R'", font, brush, 300, 300);
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                "Reward : " + total_reward, font, brush, 550, 300);
+                "Reward : " + total_reward.ToString("###. ##"), font, brush, 550, 300);
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
                 "play : " + play_count, font, brush, 440, 250);
         }
 
         public MainProgram()
         {
+            running = true;
             Carlist = new List<Car>();
             
             makeMap();
             WinFormlib.DoubleBuffering.getinstance().callback_work += Draw_totalReward;
 
             callback_worker += map.check;
-            running = true;
         }
         
         void makeMap()
@@ -88,6 +88,10 @@ namespace CarDrive_1
 
             SetCar(Carnum);
             return true;
+        }
+        public bool check()
+        {
+            return running;
         }
 
         //파이선 스레드에서 move후에 threadworker실행 XX
@@ -172,7 +176,7 @@ namespace CarDrive_1
         
 
 
-        public Tuple<double[], int, bool> Request_Move(int moveno)//int[] move_onehot)
+        public Tuple<double[], double, bool> Request_Move(int moveno)//int[] move_onehot)
         {
             //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
             /*int moveno = 0;
@@ -189,7 +193,7 @@ namespace CarDrive_1
             double v;
             double degree;
             double[] distance;
-            int reward;
+            double reward;
             bool done;
 
             lock (Carlist_locker)
@@ -212,7 +216,7 @@ namespace CarDrive_1
                     t[1] = degree;
                     distance.CopyTo(t, 2);
                     this.total_reward += reward;
-                    Tuple<double[], int, bool> ans = new Tuple<double[], int, bool>(t, reward, done);
+                    Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(t, reward, done);
                     return ans;
                 }
             }

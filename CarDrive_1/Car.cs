@@ -48,7 +48,7 @@ namespace CarDrive_1
         const double turn = 3;
         Line[] lines = new Line[5];
         double[] distances = new double[5];
-        public int reward = 0;
+        public double reward = 0;
         public bool done = false;
         Line left = new Line();
         Line right = new Line();
@@ -75,9 +75,9 @@ namespace CarDrive_1
         public double[] getdistances() { return distances; }
         public double getdegree() { return degree; }
         public double getv() { return velocity; }
-        public int getreward()
+        public double getreward()
         {
-            int r = reward;
+            double r = reward;
             reward = 0;
             return r;
         }

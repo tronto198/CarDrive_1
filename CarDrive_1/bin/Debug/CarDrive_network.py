@@ -29,8 +29,7 @@ class DQN:
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
-        w2 = self.build_weight("W2", [h_size, h_size], w1)
-        w3 = self.build_weight("W3", [h_size, h_size], w2)
+        w3 = self.build_weights(5, h_size, w1)
         w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
 
         self.Predict_Q = tf.matmul(w3, w4)
@@ -41,6 +40,16 @@ class DQN:
     def build_weight(self, name, shape, input):
         w = tf.get_variable(name, shape, initializer=self.Variable_initializer)
         layer = tf.nn.relu(tf.matmul(input, w))
+        return layer
+
+    def build_weights(self, no, size, input):
+        front_w = tf.get_variable("auto_w_1", [size, size], initializer=self.Variable_initializer)
+        layer = tf.nn.relu(tf.matmul(input, front_w))
+        for i in range(no):
+            w = tf.get_variable("auto_w" + str(i), [size, size], initializer=self.Variable_initializer)
+            new_layer = tf.nn.relu(tf.matmul(layer, w))
+            layer = new_layer
+
         return layer
 
     def predict(self, m):
@@ -111,7 +120,7 @@ class Module:
 
     #훈련
     def trainstart(self):
-        self.CarDrive.Reset()
+        self.CarDrive.Reset(self.play_count)
         self.state, self.reward, self.Done = self.step(4)
 
         #self.trainer = TT(self.select_action, 0.010)
@@ -125,7 +134,7 @@ class Module:
     def select_action(self):
         #숫자 하나 내보내고, 숫자[9], reward, Done 배열 받음
 
-        e = 1. / ((self.play_count / 2) + 1)
+        e = 0.7 / ((self.play_count) + 1)
         if np.random.rand(1) < e:
             a = np.random.rand(1) * self.output_size
             action = int(a[0] % self.output_size)
@@ -165,9 +174,9 @@ class Module:
         self.step_count = 0
         self.play_count += 1
         self.replay_train()
-        print(self.play_count)
+        print(self.play_count, " Done\n")
         time.sleep(1.5)
-        if not self.CarDrive.Reset():
+        if not self.CarDrive.Reset(self.play_count):
             self.CarDrive.Stop()
 
 class CConnecter:
@@ -182,9 +191,12 @@ class CConnecter:
         self.Cmodule.SetCar(carno)
 
     def Move(self, onehot):
-        if(self.Cmodule == None):
+        if self.Cmodule == None:
             self.Stop()
-            return
+            return None, None, None
+        if not self.Cmodule.check():
+            self.Stop()
+            return None, None, None
 
         ans = self.Cmodule.Request_Move(onehot)
 
@@ -199,12 +211,13 @@ class CConnecter:
 
         return state, reward, c_Done
 
-    def Reset(self):
-        self.Cmodule.Reset()
+    def Reset(self, count):
+        self.Cmodule.playcount(count)
+        return self.Cmodule.Reset()
 
     def Stop(self):
         self.Run = False
-        self.form.close()
+
 
 
 #form = CarDrive_1.Program.ExMain()
