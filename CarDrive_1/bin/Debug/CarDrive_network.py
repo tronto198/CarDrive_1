@@ -25,7 +25,7 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 10
+        h_size = 50
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
@@ -58,7 +58,7 @@ class Module:
         self.output_size = out_size
 
         self.session = tf.Session()
-        self.dis = 0.7
+        self.dis = 0.5
         self.R_Memory = 50000
         self.play_count = 0
         self.step_count = 0
@@ -88,10 +88,11 @@ class Module:
     def replay_train(self):
         replaytime = 5
         for _ in range(replaytime):
-            trainbatch = random.sample(self.replay_buffer, 10)
+            trainbatch = random.sample(self.replay_buffer, 100)
 
             x_stack = np.empty(0).reshape(0, self.input_size)
             y_stack = np.empty(0).reshape(0, self.output_size)
+            print(trainbatch[0])
 
             for state, action, reward, next_state, done in trainbatch:
                 Q = self.dqn.predict(state)
@@ -105,6 +106,8 @@ class Module:
                 y_stack = np.vstack([y_stack, Q])
             loss, _ = self.dqn.update(x_stack, y_stack)
             print("Loss : ", loss)
+
+        print("Update\n")
 
     #훈련
     def trainstart(self):
@@ -122,7 +125,7 @@ class Module:
     def select_action(self):
         #숫자 하나 내보내고, 숫자[9], reward, Done 배열 받음
 
-        e = 1. / ((self.play_count / 5) + 1)
+        e = 1. / ((self.play_count / 2) + 1)
         if np.random.rand(1) < e:
             a = np.random.rand(1) * self.output_size
             action = int(a[0] % self.output_size)
@@ -139,39 +142,33 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % 1000 == 0:
+        if self.step_count % 5000 == 0:
             self.replay_train()
-            print("Update")
 
         if self.step_count > 9999999:
-            self.play_count += 1
-            print(self.play_count, " Done")
-            self.replay_train()
-            print("Update")
-            # Timer(3, self.trainstart()).start()
-            time.sleep(2)
-            self.CarDrive.Reset()
+            self.Reset()
 
         if self.Done:
-            #self.trainer.stop()
-            self.play_count += 1
-            print(self.play_count, " Done")
-            self.replay_train()
-            print("Update")
-            #Timer(3, self.trainstart()).start()
-            time.sleep(2)
-            self.CarDrive.Reset()
+            self.Reset()
 
-        if self.play_count > 50:
+        if self.play_count > 1000:
             self.CarDrive.Stop()
 
     #C#과 통신
     def step(self, next_move):
         state, reward, Done = self.CarDrive.Move(next_move)
-        if(next_move == 2): print("2")
-        if(next_move == 5): print("5")
+        #if(next_move == 2): print("2")
+        #if(next_move == 5): print("5")
         return state, reward, Done
 
+    def Reset(self):
+        self.step_count = 0
+        self.play_count += 1
+        self.replay_train()
+        print(self.play_count)
+        time.sleep(1.5)
+        if not self.CarDrive.Reset():
+            self.CarDrive.Stop()
 
 class CConnecter:
     def __init__(self, num):
@@ -211,7 +208,7 @@ class CConnecter:
 
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(1, 7, 6)
+module = Module(1, 7, 9)
 module.trainstart()
 
 

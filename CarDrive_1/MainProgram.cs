@@ -12,7 +12,11 @@ namespace CarDrive_1
         List<Car> Carlist = null;
         WinFormlib.Threading_Timer_v0 worker = null;
         int total_reward = 0;
+        int play_count = 0;
+        bool running = false;
         object Carlist_locker = new object();
+
+
         public static System.Drawing.Font font = new System.Drawing.Font("휴먼편지체", 15);
         public static System.Drawing.Brush brush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
 
@@ -24,7 +28,9 @@ namespace CarDrive_1
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
                 "Reset to 'R'", font, brush, 300, 300);
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                "Reward : " + total_reward, font, brush, 550, 300); 
+                "Reward : " + total_reward, font, brush, 550, 300);
+            WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
+                "play : " + play_count, font, brush, 440, 250);
         }
 
         public MainProgram()
@@ -35,6 +41,7 @@ namespace CarDrive_1
             WinFormlib.DoubleBuffering.getinstance().callback_work += Draw_totalReward;
 
             callback_worker += map.check;
+            running = true;
         }
         
         void makeMap()
@@ -61,8 +68,13 @@ namespace CarDrive_1
                 }
             }
         }
-        public void Reset(int Carnum = 1)
+        public void playcount(int count)
         {
+            play_count = count;
+        }
+        public bool Reset(int Carnum = 1)
+        {
+            if (!running) return false;
             lock (Carlist_locker)
             {
                 foreach (Car c in Carlist)
@@ -75,6 +87,7 @@ namespace CarDrive_1
             map.Reset();
 
             SetCar(Carnum);
+            return true;
         }
 
         //파이선 스레드에서 move후에 threadworker실행 XX
@@ -151,6 +164,13 @@ namespace CarDrive_1
             Request_Move(onehot);*/
             Request_Move(keyinput);
         }
+
+        public void Formclose()
+        {
+            running = false;
+        }
+        
+
 
         public Tuple<double[], int, bool> Request_Move(int moveno)//int[] move_onehot)
         {
