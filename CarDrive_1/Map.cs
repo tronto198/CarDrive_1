@@ -21,8 +21,8 @@ namespace CarDrive_1
         int x, y;
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
-        const double Crashreward = -500;
-        const double Bonusreward = 1000;
+        const double Crashreward = -300;
+        const double Bonusreward = 3000;
         Line CenterLine;
         int count = 0;
 
@@ -73,7 +73,7 @@ namespace CarDrive_1
 
             makeCheckLines();
 
-            Startpoint.X = (int)((CenterLine.point1.X + CenterLine.point2.X) / 2 + 100);
+            Startpoint.X = (int)((CenterLine.point1.X + CenterLine.point2.X) / 2 + 80);
             Startpoint.Y = (int)(CenterLine.point1.Y + half + TrackSize / 2);
 
         }
@@ -215,7 +215,7 @@ namespace CarDrive_1
         /// <param name="car">검사할 차</param>
         public void check(Car car)
         {
-            car.reward = -0.05;
+            car.reward = -0.1;
             //트랙에 충돌되는지
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?
@@ -603,7 +603,7 @@ namespace CarDrive_1
 
     class CheckLine : Line
     {
-        double reward = 300;
+        double reward = 1000;
         bool activation = false;
         static Pen ActivatePen = new Pen(new SolidBrush(Color.IndianRed));
         CheckLine nextLine;
