@@ -68,7 +68,7 @@ class Module:
 
         self.session = tf.Session()
         self.dis = 0.5
-        self.R_Memory = 50000
+        self.R_Memory = 500000
         self.play_count = 0
         self.step_count = 0
 
@@ -95,9 +95,9 @@ class Module:
 
     #dqn을 훈련시키는 코드
     def replay_train(self):
-        replaytime = 5
+        replaytime = 3
         for _ in range(replaytime):
-            trainbatch = random.sample(self.replay_buffer, 100)
+            trainbatch = random.sample(self.replay_buffer, 200)
 
             x_stack = np.empty(0).reshape(0, self.input_size)
             y_stack = np.empty(0).reshape(0, self.output_size)
@@ -151,11 +151,11 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % 3000 == 0:
+        if self.step_count % 1500 == 0:
             self.replay_train()
 
-        if self.step_count > 9999999:
-            self.Reset()
+        #if self.step_count > 9999999:
+           # self.Reset()
 
         if self.Done:
             self.Reset()
