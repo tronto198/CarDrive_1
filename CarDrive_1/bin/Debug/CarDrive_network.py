@@ -151,7 +151,7 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % 1500 == 0:
+        if self.step_count % 500 == 0:
             self.replay_train()
 
         #if self.step_count > 9999999:

@@ -155,7 +155,7 @@ namespace CarDrive_1
             for(int i = 0;i < 5; i++)
             {
                 g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
-                    (float)x, (float)y - 15 * 4 + 15 * i);
+                    (float)x - center.Y - 10, (float)y - 15 * 2 + 15 * i);
 
             }
         }
