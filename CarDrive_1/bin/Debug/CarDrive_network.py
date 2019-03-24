@@ -25,11 +25,11 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 50
+        h_size = 2048
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
-        w3 = self.build_weights(5, h_size, w1)
+        w3 = self.build_weights(8, h_size, w1)
         w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
 
         self.Predict_Q = tf.matmul(w3, w4)
@@ -67,8 +67,8 @@ class Module:
         self.output_size = out_size
 
         self.session = tf.Session()
-        self.dis = 0.5
-        self.R_Memory = 500000
+        self.dis = 0.6
+        self.R_Memory = 80000
         self.play_count = 0
         self.step_count = 0
 
@@ -95,13 +95,16 @@ class Module:
 
     #dqn을 훈련시키는 코드
     def replay_train(self):
-        replaytime = 3
+        replaytime = 8
+        batch_size = 100
         for _ in range(replaytime):
-            trainbatch = random.sample(self.replay_buffer, 200)
+            if batch_size > len(self.replay_buffer):
+                batch_size = len(self.replay_buffer)
+            trainbatch = random.sample(self.replay_buffer, batch_size)
 
             x_stack = np.empty(0).reshape(0, self.input_size)
             y_stack = np.empty(0).reshape(0, self.output_size)
-            print(trainbatch[0])
+            #print(trainbatch[0])
 
             for state, action, reward, next_state, done in trainbatch:
                 Q = self.dqn.predict(state)
@@ -136,7 +139,11 @@ class Module:
 
         e = 0.7 / ((self.play_count) + 1)
         if np.random.rand(1) < e:
-            a = np.random.rand(1) * self.output_size
+            if self.play_count * 3 < self.output_size:
+                bound = self.play_count * 3
+            else:
+                bound = self.output_size
+            a = np.random.rand(1) * bound
             action = int(a[0] % self.output_size)
         else:
             action = np.argmax(self.dqn.predict(self.state))
@@ -151,7 +158,7 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % 500 == 0:
+        if self.step_count % 600 == 0:
             self.replay_train()
 
         #if self.step_count > 9999999:
@@ -160,8 +167,8 @@ class Module:
         if self.Done:
             self.Reset()
 
-        if self.play_count > 1000:
-            self.CarDrive.Stop()
+        #if self.play_count > 1000:
+        #    self.CarDrive.Stop()
 
     #C#과 통신
     def step(self, next_move):
@@ -175,7 +182,7 @@ class Module:
         self.play_count += 1
         self.replay_train()
         print(self.play_count, " Done\n")
-        time.sleep(1.5)
+        time.sleep(0.7)
         if not self.CarDrive.Reset(self.play_count):
             self.CarDrive.Stop()
 
@@ -221,7 +228,7 @@ class CConnecter:
 
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(1, 7, 9)
+module = Module(1, 6, 9)
 module.trainstart()
 
 

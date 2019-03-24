@@ -191,7 +191,7 @@ namespace CarDrive_1
             //for(int i = 0;i < move_onehot.Length;i++)
 
             double v;
-            double degree;
+            //double degree;
             double[] distance;
             double reward;
             bool done;
@@ -205,16 +205,16 @@ namespace CarDrive_1
 
 
                     v = Carlist[0].getv();
-                    degree = Carlist[0].getdegree();
+                    //degree = Carlist[0].getdegree();
                     distance = Carlist[0].getdistances();
                     reward = Carlist[0].getreward();
                     done = Carlist[0].done;
 
 
-                    double[] t = new double[7];
+                    double[] t = new double[6];
                     t[0] = v;
-                    t[1] = degree;
-                    distance.CopyTo(t, 2);
+                   // t[1] = degree;
+                    distance.CopyTo(t, 1);
                     this.total_reward += reward;
                     Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(t, reward, done);
                     return ans;
