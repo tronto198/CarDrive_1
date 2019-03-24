@@ -25,11 +25,11 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 2048
+        h_size = 1024
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
-        w3 = self.build_weights(8, h_size, w1)
+        w3 = self.build_weights(3, h_size, w1)
         w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
 
         self.Predict_Q = tf.matmul(w3, w4)
@@ -182,7 +182,7 @@ class Module:
         self.play_count += 1
         self.replay_train()
         print(self.play_count, " Done\n")
-        time.sleep(0.7)
+        time.sleep(0.3)
         if not self.CarDrive.Reset(self.play_count):
             self.CarDrive.Stop()
 
