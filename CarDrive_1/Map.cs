@@ -215,7 +215,7 @@ namespace CarDrive_1
         /// <param name="car">검사할 차</param>
         public void check(Car car)
         {
-            car.reward = -0.1;
+            car.reward = -1;
             //트랙에 충돌되는지
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?

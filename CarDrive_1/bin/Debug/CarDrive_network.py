@@ -68,7 +68,7 @@ class Module:
 
         self.session = tf.Session()
         self.dis = 0.6
-        self.R_Memory = 80000
+        self.R_Memory = 500000
         self.play_count = 0
         self.step_count = 0
 
