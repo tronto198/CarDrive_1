@@ -137,7 +137,7 @@ class Module:
     def select_action(self):
         #숫자 하나 내보내고, 숫자[9], reward, Done 배열 받음
 
-        e = 0.7 / ((self.play_count) + 1)
+        e = 0.9 / ((self.play_count / 3) + 1)
         if np.random.rand(1) < e:
             if self.play_count * 3 < self.output_size:
                 bound = self.play_count * 3
@@ -207,16 +207,20 @@ class CConnecter:
 
         ans = self.Cmodule.Request_Move(onehot)
 
-        c_state = ans.get_Item1()
         state = [[]]
-        for i in range(len(c_state)):
-            state[0].append(c_state[i])
+        reward = []
+        Done = []
 
-        c_reward = ans.get_Item2()
-        reward = 0 + c_reward
-        c_Done = ans.get_Item3()
+        for car_no in range(len(ans)):
+            c_state = ans[car_no].get_Item1()
+            for j in range(len(c_state)):
+                state[0].append(c_state[j])
 
-        return state, reward, c_Done
+            c_reward = ans[car_no].get_Item2()
+            reward.append(0 + c_reward)
+            Done.append(ans.get_Item3())
+
+        return state, reward, Done
 
     def Reset(self, count):
         self.Cmodule.playcount(count)

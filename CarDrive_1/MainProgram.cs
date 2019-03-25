@@ -176,7 +176,7 @@ namespace CarDrive_1
         
 
 
-        public Tuple<double[], double, bool> Request_Move(int moveno)//int[] move_onehot)
+        public Tuple<double[], double, bool>[] Request_Move(int moveno)//int[] move_onehot)
         {
             //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
             /*int moveno = 0;
@@ -190,37 +190,43 @@ namespace CarDrive_1
             }*/
             //for(int i = 0;i < move_onehot.Length;i++)
 
-            double v;
+            //double v;
             //double degree;
-            double[] distance;
-            double reward;
-            bool done;
-
             lock (Carlist_locker)
             {
-                if (Carlist.Count > 0)
+                Tuple<double[], double, bool>[] anslist = new Tuple<double[], double, bool>[Carlist.Count];
+                
+                
+                for (int i = 0; i < Carlist.Count; i++)
                 {
-                    Carlist[0].move(moveno);
-                    callback_worker(Carlist[0]);
+                    double[] dbs = new double[6];
+                    double reward;
+                    bool done;
+                    double[] distance;
+                        
+                    Carlist[i].move(moveno);
+                    callback_worker(Carlist[i]);
 
 
-                    v = Carlist[0].getv();
+                    dbs[0] = Carlist[i].getv();
                     //degree = Carlist[0].getdegree();
-                    distance = Carlist[0].getdistances();
-                    reward = Carlist[0].getreward();
-                    done = Carlist[0].done;
+                    distance = Carlist[i].getdistances();
+                    reward = Carlist[i].getreward();
+                    done = Carlist[i].done;
 
-
-                    double[] t = new double[6];
-                    t[0] = v;
-                   // t[1] = degree;
-                    distance.CopyTo(t, 1);
-                    this.total_reward += reward;
-                    Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(t, reward, done);
-                    return ans;
+                        
+                    //dbs[i][0] = v;
+                    // t[1] = degree;
+                    distance.CopyTo(dbs, 1);
+                    //this.total_reward += reward;
+                    Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(dbs, reward, done);
+                    anslist[i] = ans;
                 }
+                
+                return anslist;
+                
             }
-            return null;
+            
         }
 
     }
