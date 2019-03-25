@@ -21,8 +21,8 @@ namespace CarDrive_1
         int x, y;
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
-        const int Crashreward = -500;
-        const int Bonusreward = 100;
+        const double Crashreward = -20;
+        const double Bonusreward = 200;
         Line CenterLine;
         int count = 0;
 
@@ -73,7 +73,7 @@ namespace CarDrive_1
 
             makeCheckLines();
 
-            Startpoint.X = (int)((CenterLine.point1.X + CenterLine.point2.X) / 2);
+            Startpoint.X = (int)((CenterLine.point1.X + CenterLine.point2.X) / 2 + 80);
             Startpoint.Y = (int)(CenterLine.point1.Y + half + TrackSize / 2);
 
         }
@@ -215,7 +215,7 @@ namespace CarDrive_1
         /// <param name="car">검사할 차</param>
         public void check(Car car)
         {
-            //car.reward = -1;
+            car.reward = -0.05;
             //트랙에 충돌되는지
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?
@@ -224,7 +224,7 @@ namespace CarDrive_1
             //차의 양옆 선 둘 필요
             //모서리 넷이 각각 안에 있는지로 판별
 
-            int reward = 0;
+            double reward = 0;
 
             
 
@@ -297,7 +297,7 @@ namespace CarDrive_1
 
         }
 
-        void Crashed(Car car, int reward)
+        void Crashed(Car car, double reward)
         {
             //차에 함수 만들기
             if(!car.done)
@@ -305,7 +305,7 @@ namespace CarDrive_1
             car.done = true;
         }
 
-        void Bonus(Car car, int reward)
+        void Bonus(Car car, double reward)
         {
             //차에 함수 만들기
             car.reward = reward;
@@ -603,7 +603,7 @@ namespace CarDrive_1
 
     class CheckLine : Line
     {
-        int reward = 50;
+        double reward = 50;
         bool activation = false;
         static Pen ActivatePen = new Pen(new SolidBrush(Color.IndianRed));
         CheckLine nextLine;
@@ -616,7 +616,7 @@ namespace CarDrive_1
         /// 보상 설정
         /// </summary>
         /// <param name="_reward">보상값</param>
-        public void setreward(int _reward)
+        public void setreward(double _reward)
         {
             reward = _reward;
         }
@@ -643,7 +643,7 @@ namespace CarDrive_1
         }
         
 
-        public bool Crashing(Car car, out CheckLine line, out int _reward)
+        public bool Crashing(Car car, out CheckLine line, out double _reward)
         {
             if (!activation) throw new Exception("활성화되지 않은 라인!");
 

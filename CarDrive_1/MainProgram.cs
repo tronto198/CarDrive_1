@@ -11,8 +11,12 @@ namespace CarDrive_1
         Map map = null;
         List<Car> Carlist = null;
         WinFormlib.Threading_Timer_v0 worker = null;
-        int total_reward = 0;
+        double total_reward = 0;
+        int play_count = 0;
+        bool running = false;
         object Carlist_locker = new object();
+
+
         public static System.Drawing.Font font = new System.Drawing.Font("휴먼편지체", 15);
         public static System.Drawing.Brush brush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
 
@@ -24,11 +28,14 @@ namespace CarDrive_1
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
                 "Reset to 'R'", font, brush, 300, 300);
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                "Reward : " + total_reward, font, brush, 550, 300); 
+                "Reward : " + total_reward.ToString("###. ##"), font, brush, 550, 300);
+            WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
+                "play : " + play_count, font, brush, 440, 250);
         }
 
         public MainProgram()
         {
+            running = true;
             Carlist = new List<Car>();
             
             makeMap();
@@ -61,8 +68,13 @@ namespace CarDrive_1
                 }
             }
         }
-        public void Reset(int Carnum = 1)
+        public void playcount(int count)
         {
+            play_count = count;
+        }
+        public bool Reset(int Carnum = 1)
+        {
+            if (!running) return false;
             lock (Carlist_locker)
             {
                 foreach (Car c in Carlist)
@@ -75,6 +87,11 @@ namespace CarDrive_1
             map.Reset();
 
             SetCar(Carnum);
+            return true;
+        }
+        public bool check()
+        {
+            return running;
         }
 
         //파이선 스레드에서 move후에 threadworker실행 XX
@@ -152,7 +169,14 @@ namespace CarDrive_1
             Request_Move(keyinput);
         }
 
-        public Tuple<double[], int, bool> Request_Move(int moveno)//int[] move_onehot)
+        public void Formclose()
+        {
+            running = false;
+        }
+        
+
+
+        public Tuple<double[], double, bool> Request_Move(int moveno)//int[] move_onehot)
         {
             //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
             /*int moveno = 0;
@@ -167,9 +191,9 @@ namespace CarDrive_1
             //for(int i = 0;i < move_onehot.Length;i++)
 
             double v;
-            double degree;
+            //double degree;
             double[] distance;
-            int reward;
+            double reward;
             bool done;
 
             lock (Carlist_locker)
@@ -181,18 +205,18 @@ namespace CarDrive_1
 
 
                     v = Carlist[0].getv();
-                    degree = Carlist[0].getdegree();
+                    //degree = Carlist[0].getdegree();
                     distance = Carlist[0].getdistances();
                     reward = Carlist[0].getreward();
                     done = Carlist[0].done;
 
 
-                    double[] t = new double[7];
+                    double[] t = new double[6];
                     t[0] = v;
-                    t[1] = degree;
-                    distance.CopyTo(t, 2);
+                   // t[1] = degree;
+                    distance.CopyTo(t, 1);
                     this.total_reward += reward;
-                    Tuple<double[], int, bool> ans = new Tuple<double[], int, bool>(t, reward, done);
+                    Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(t, reward, done);
                     return ans;
                 }
             }

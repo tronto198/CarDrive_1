@@ -48,7 +48,7 @@ namespace CarDrive_1
         const double turn = 3;
         Line[] lines = new Line[5];
         double[] distances = new double[5];
-        public int reward = 0;
+        public double reward = 0;
         public bool done = false;
         Line left = new Line();
         Line right = new Line();
@@ -75,9 +75,9 @@ namespace CarDrive_1
         public double[] getdistances() { return distances; }
         public double getdegree() { return degree; }
         public double getv() { return velocity; }
-        public int getreward()
+        public double getreward()
         {
-            int r = reward;
+            double r = reward;
             reward = 0;
             return r;
         }
@@ -155,7 +155,7 @@ namespace CarDrive_1
             for(int i = 0;i < 5; i++)
             {
                 g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
-                    (float)x, (float)y - 15 * 4 + 15 * i);
+                    (float)x - center.Y - 30, (float)y - 15 * 2 + 15 * i);
 
             }
         }

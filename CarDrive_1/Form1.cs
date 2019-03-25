@@ -114,12 +114,8 @@ namespace CarDrive_1
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            //Main_Program.formclose();
+            Main_Program.Formclose();
         }
-
-        public void close()
-        {
-            this.Close();
-        }
+        
     }
 }
