@@ -9,7 +9,8 @@ namespace CarDrive_1
     public class MainProgram
     {
         Map map = null;
-        List<Car> Carlist = null;
+        List<Car> Full_Carlist = null;
+        List<Car> Active_Carlist = null;
         WinFormlib.Threading_Timer_v0 worker = null;
         double total_reward = 0;
         int play_count = 0;
@@ -36,7 +37,8 @@ namespace CarDrive_1
         public MainProgram()
         {
             running = true;
-            Carlist = new List<Car>();
+            Active_Carlist = new List<Car>();
+            Full_Carlist = new List<Car>();
             
             makeMap();
             WinFormlib.DoubleBuffering.getinstance().callback_work += Draw_totalReward;
@@ -52,19 +54,33 @@ namespace CarDrive_1
             map.Show();
         }
 
-        //프로그램에 차 세팅
-        public void SetCar(int Carnum = 1)
+        //프로그램에 차 추가
+        public void AddCar(int Carnum = 1)
         {
             lock (Carlist_locker)
             {
                 for (int i = 0; i < Carnum; i++)
                 {
                     Car car = new Car();
-                    Carlist.Add(car);
-                    car.setLocation(map.getStartPoint());
-                    car.setDegree(map.getStartDegree());
+                    Active_Carlist.Add(car);
+                    Full_Carlist.Add(car);
                     car.Show();
                     car.setSize();
+                }
+            }
+            SetCar();
+        }
+
+        //프로그램에 차 세팅
+        void SetCar()
+        {
+            lock (Carlist_locker)
+            {
+                for (int i = 0; i < Active_Carlist.Count; i++)
+                {
+                    Car car = Active_Carlist[i];
+                    car.setLocation(map.getStartPoint());
+                    car.setDegree(map.getStartDegree());
                 }
             }
         }
@@ -72,21 +88,21 @@ namespace CarDrive_1
         {
             play_count = count;
         }
-        public bool Reset(int Carnum = 1)
+        public bool Reset()
         {
             if (!running) return false;
             lock (Carlist_locker)
             {
-                foreach (Car c in Carlist)
+                Active_Carlist.Clear();
+                foreach (Car c in Full_Carlist)
                 {
-                    c.unShow();
+                    Active_Carlist.Add(c);
                 }
-                Carlist.Clear();
             }
             total_reward = 0;
             map.Reset();
 
-            SetCar(Carnum);
+            SetCar();
             return true;
         }
         public bool check()
@@ -110,7 +126,7 @@ namespace CarDrive_1
         //이 프로그램을 C#으로 테스트할때 실행
         public void TestwithKeyinput()
         {
-            SetCar(1);
+            AddCar(1);
             WinFormlib.Key_input.Key_in += delegate (System.Windows.Forms.Keys key)
             {
                 if(key == System.Windows.Forms.Keys.R)
@@ -166,7 +182,7 @@ namespace CarDrive_1
             }
             onehot[keyinput] = 1;
             Request_Move(onehot);*/
-            Request_Move(keyinput);
+            Request_Move(new int[1] { keyinput });
         }
 
         public void Formclose()
@@ -176,7 +192,7 @@ namespace CarDrive_1
         
 
 
-        public Tuple<double[], double, bool>[] Request_Move(int moveno)//int[] move_onehot)
+        public Tuple<double[], double, bool>[] Request_Move(int[] moveno)//int[] move_onehot)
         {
             //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
             /*int moveno = 0;
@@ -194,25 +210,27 @@ namespace CarDrive_1
             //double degree;
             lock (Carlist_locker)
             {
-                Tuple<double[], double, bool>[] anslist = new Tuple<double[], double, bool>[Carlist.Count];
+                Tuple<double[], double, bool>[] anslist = new Tuple<double[], double, bool>[Active_Carlist.Count];
                 
                 
-                for (int i = 0; i < Carlist.Count; i++)
+                for (int i = 0; i < Active_Carlist.Count; i++)
                 {
+                    //System.Windows.Forms.MessageBox.Show(i+" " + Active_Carlist.Count);
                     double[] dbs = new double[6];
                     double reward;
                     bool done;
                     double[] distance;
                         
-                    Carlist[i].move(moveno);
-                    callback_worker(Carlist[i]);
+                    Active_Carlist[i].move(moveno[i]);
+                    callback_worker(Active_Carlist[i]);
 
 
-                    dbs[0] = Carlist[i].getv();
+                    dbs[0] = Active_Carlist[i].getv();
                     //degree = Carlist[0].getdegree();
-                    distance = Carlist[i].getdistances();
-                    reward = Carlist[i].getreward();
-                    done = Carlist[i].done;
+                    distance = Active_Carlist[i].getdistances();
+                    reward = Active_Carlist[i].getreward();
+                    done = Active_Carlist[i].done;
+                    if (done) Active_Carlist.RemoveAt(i);
 
                         
                     //dbs[i][0] = v;
@@ -222,7 +240,7 @@ namespace CarDrive_1
                     Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(dbs, reward, done);
                     anslist[i] = ans;
                 }
-                
+                //this.total_reward += anslist[0].Item2;
                 return anslist;
                 
             }

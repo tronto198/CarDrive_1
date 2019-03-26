@@ -74,12 +74,12 @@ class Module:
 
         #self.trainer = None
         self.dqn = None
-        self.CarDrive = CConnecter(numofcar)
+        self.CarDrive = None
         self.replay_buffer = deque()
 
         self.state = []
-        self.reward = 0
-        self.Done = False
+        self.reward = []
+        self.Done = []
 
         self.env_setting()
 
@@ -91,15 +91,17 @@ class Module:
         self.dqn = DQN(self.session, self.input_size, self.output_size)
         tf.global_variables_initializer().run(session=self.session)
         #카 드라이브 객체 생성 후 차 갯수 설정
+        self.CarDrive = CConnecter(self.numofcar)
         return True
 
     #dqn을 훈련시키는 코드
     def replay_train(self):
         replaytime = 5
         batch_size = 150
+        if batch_size > len(self.replay_buffer):
+            batch_size = len(self.replay_buffer)
+
         for _ in range(replaytime):
-            if batch_size > len(self.replay_buffer):
-                batch_size = len(self.replay_buffer)
             trainbatch = random.sample(self.replay_buffer, batch_size)
 
             x_stack = np.empty(0).reshape(0, self.input_size)
@@ -108,11 +110,12 @@ class Module:
 
             for state, action, reward, next_state, done in trainbatch:
                 Q = self.dqn.predict(state)
-
-                if done:
-                    Q[0, action] = reward
-                else:
-                    Q[0, action] = (1 - self.dis) * reward + self.dis * np.max(self.dqn.predict(next_state))
+                predict = np.max(self.dqn.predict(next_state), 1)
+                for i in range(len(Q)):
+                    if done[i]:
+                        Q[i, action[i]] = reward[i]
+                    else:
+                        Q[i, action[i]] = (1 - self.dis) * reward[i] + self.dis * predict[i]
 
                 x_stack = np.vstack([x_stack, state])
                 y_stack = np.vstack([y_stack, Q])
@@ -123,35 +126,47 @@ class Module:
 
     #훈련
     def trainstart(self):
-        self.CarDrive.Reset(self.play_count)
-        self.state, self.reward, self.Done = self.step(4)
+        #self.CarDrive.Reset(self.play_count)
 
-        #self.trainer = TT(self.select_action, 0.010)
+        a = []
+        for _ in range(self.numofcar):
+            a.append(4)
+        self.state, self.reward, self.Done = self.step(a)
+
         while self.CarDrive.Run:
             self.select_action()
-            time.sleep(0.01)
-
-        #self.trainer.start()
+            time.sleep(0.01) #10ms
 
     #실제 실행되는 코드 - 액션을 선택하고 결과를 리턴받음
     def select_action(self):
         #숫자 하나 내보내고, 숫자[9], reward, Done 배열 받음
 
+        action = []
         e = 0.9 / ((self.play_count / 3) + 1)
-        if np.random.rand(1) < e:
-            if self.play_count * 3 < self.output_size:
-                bound = self.play_count * 3
-            else:
-                bound = self.output_size
-            a = np.random.rand(1) * bound
-            action = int(a[0] % self.output_size)
+        randid = np.random.rand(self.numofcar)
+
+        if self.play_count * 3 < self.output_size:  #초반 앞으로좀 가게 하기 위한 장치
+            bound = self.play_count * 3
         else:
-            action = np.argmax(self.dqn.predict(self.state))
+            bound = self.output_size
+
+        predict = self.dqn.predict(self.state)
+        for i in range(self.numofcar):
+            if randid[i] < e:
+                a = np.random.rand(1) * bound
+                action.append(int(a[0] % self.output_size))
+            else:
+                action.append(np.argmax(predict[i]))
 
         next_state, self.reward, self.Done = self.step(action)
 
         self.replay_buffer.append((self.state, action, self.reward, next_state, self.Done))
-        self.state = next_state
+        n_state = next_state[:]
+        for i in range(self.numofcar):
+            if self.Done[i]:
+                n_state.pop(i)
+
+        self.state = n_state
 
         if len(self.replay_buffer) > self.R_Memory:
             self.replay_buffer.popleft()
@@ -164,7 +179,7 @@ class Module:
         #if self.step_count > 9999999:
            # self.Reset()
 
-        if self.Done:
+        if not self.state:
             self.Reset()
 
         #if self.play_count > 1000:
@@ -186,6 +201,11 @@ class Module:
         if not self.CarDrive.Reset(self.play_count):
             self.CarDrive.Stop()
 
+        a = []
+        for _ in range(self.numofcar):
+            a.append(4)
+        self.state, self.reward, self.Done = self.step(a)
+
 class CConnecter:
     def __init__(self, num):
         self.form = car.Program.ExMain()
@@ -195,7 +215,7 @@ class CConnecter:
 
 
     def Set(self, carno):
-        self.Cmodule.SetCar(carno)
+        self.Cmodule.AddCar(carno)
 
     def Move(self, onehot):
         if self.Cmodule == None:
@@ -207,18 +227,19 @@ class CConnecter:
 
         ans = self.Cmodule.Request_Move(onehot)
 
-        state = [[]]
+        state = []
         reward = []
         Done = []
 
         for car_no in range(len(ans)):
             c_state = ans[car_no].get_Item1()
+            state.append([])
             for j in range(len(c_state)):
-                state[0].append(c_state[j])
+                state[car_no].append(c_state[j])
 
             c_reward = ans[car_no].get_Item2()
             reward.append(0 + c_reward)
-            Done.append(ans.get_Item3())
+            Done.append(ans[car_no].get_Item3())
 
         return state, reward, Done
 

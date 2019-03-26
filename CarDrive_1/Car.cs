@@ -97,6 +97,12 @@ namespace CarDrive_1
             bitmap = new Bitmap(img);
         }
         
+        void apply_change()
+        {
+            cal_distance();
+            velocity = 0;
+            done = false;
+        }
 
         public void Show()
         {
@@ -128,10 +134,12 @@ namespace CarDrive_1
         {
             x = _x;
             y = _y;
+            apply_change();
         }
         public void setDegree(int _degree)
         {
             degree = (double)_degree;
+            apply_change();
         }
 
 
