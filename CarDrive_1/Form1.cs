@@ -26,7 +26,7 @@ namespace CarDrive_1
             
             FirstSetting();
 
-            Main_Program = new MainProgram();
+            Main_Program = new MainProgram(this);
                                     
 
             //ShowHelp();

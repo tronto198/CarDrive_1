@@ -52,6 +52,7 @@ namespace CarDrive_1
         public bool done = false;
         Line left = new Line();
         Line right = new Line();
+        public int carnum = 0;
 
 
         //Rectangle car = new Rectangle();
@@ -71,6 +72,14 @@ namespace CarDrive_1
         public void setdistance(double[] distances)
         {
             this.distances = distances;
+        }
+        public void setcarnum(int num)
+        {
+            carnum = num;
+            foreach(Line l in lines)
+            {
+                l.setPen(LineColors.Pens[carnum]);
+            }
         }
         public double[] getdistances() { return distances; }
         public double getdegree() { return degree; }
@@ -111,8 +120,8 @@ namespace CarDrive_1
             {
                 l.Show();
             }
-            left.Show();
-            right.Show();
+            //left.Show();
+            //right.Show();
         }
         public void unShow()
         {
@@ -122,8 +131,8 @@ namespace CarDrive_1
                 l.unShow();
             }
 
-            left.unShow();
-            right.unShow();
+            //left.unShow();
+            //right.unShow();
         }
         
         public void setLocation(Point p)
@@ -159,13 +168,13 @@ namespace CarDrive_1
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
             g.ResetTransform();
 
-            Font font = new Font("휴먼편지체", 8);
-            for(int i = 0;i < 5; i++)
-            {
-                g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
-                    (float)x - center.Y - 30, (float)y - 15 * 2 + 15 * i);
+            //Font font = new Font("휴먼편지체", 8);
+            //for(int i = 0;i < 5; i++)
+            //{
+            //    g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
+            //        (float)x - center.Y - 30, (float)y - 15 * 2 + 15 * i);
 
-            }
+            //}
         }
         
         //차를 어떻게 움직일지 입력
@@ -348,7 +357,7 @@ namespace CarDrive_1
             //
             //2   4
             //
-            double length = Math.Sqrt(center.X * center.X + center.Y * center.Y) - 2;
+            double length = Math.Sqrt(center.X * center.X + center.Y * center.Y) - 3;
             double degree = this.degree + 90;
             double d_fr = Math.Atan(center.Y / center.X) * m.to_degree + 90;
             double d_fl = -d_fr;

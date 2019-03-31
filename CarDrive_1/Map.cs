@@ -23,6 +23,7 @@ namespace CarDrive_1
         const int TrackSize = 100;
         const double Crashreward = -20;
         const double Bonusreward = 200;
+        int carnum = 0;
         Line CenterLine;
         int count = 0;
 
@@ -30,7 +31,7 @@ namespace CarDrive_1
         Pen thispen = new Pen(new SolidBrush(Color.Black));
 
         List<CheckLine> Linelist = new List<CheckLine>();
-        CheckLine currentgoal = null;
+        CheckLine[] currentgoal = null;
         CheckLine firstgoal = null;
 
 
@@ -79,9 +80,15 @@ namespace CarDrive_1
         }
         public void Reset()
         {
-            currentgoal.unActivate();
-            firstgoal.Activate();
-            currentgoal = firstgoal;
+            for(int i = 0;i < carnum; i++)
+            {
+                currentgoal[i].unActivate(i);
+                firstgoal.Activate(i);
+                currentgoal[i] = firstgoal;
+            }
+            //currentgoal.unActivate();
+            //firstgoal.Activate();
+            //currentgoal = firstgoal;
         }
 
         void makeCheckLines()
@@ -162,9 +169,12 @@ namespace CarDrive_1
             CheckLine line5 = make_round(line4, CenterLine.point1, 180, 360);
             line5.Link(lastline);
 
+            for(int i = 0;i < carnum; i++)
+            {
 
-            firstgoal.Activate();
-            currentgoal = firstgoal;
+            }
+            //firstgoal.Activate();
+            //currentgoal = firstgoal;
 
             Linelist.Add(lastline);
 
@@ -213,7 +223,7 @@ namespace CarDrive_1
         /// 차가 트랙에 닿는지, 포인트를 지났는지 검사
         /// </summary>
         /// <param name="car">검사할 차</param>
-        public void check(Car car)
+        public void check(Car car, int carnum)
         {
             car.reward = -0.05;
             //트랙에 충돌되는지
@@ -276,7 +286,7 @@ namespace CarDrive_1
             if (currentgoal == null) return;
 
             //차가 세이브 포인트를 넘겼는지 판별
-            if (currentgoal.Crashing(car, out currentgoal, out reward))
+            if (currentgoal[carnum].Crashing(car, carnum, out currentgoal[carnum], out reward))
             {
                 Bonus(car, reward);
             }
@@ -481,6 +491,22 @@ namespace CarDrive_1
             }
             return;
         }
+
+        public void setCarnum(int carnum)
+        {
+            this.carnum = carnum;
+            currentgoal = new CheckLine[carnum];
+            foreach(CheckLine cl in Linelist)
+            {
+                cl.setCarnum(carnum);
+            }
+            for(int i = 0;i < carnum; i++)
+            {
+                currentgoal[i] = firstgoal;
+                firstgoal.Activate(i);
+            }
+            //Reset();
+        }
     }
 
     //선
@@ -488,7 +514,7 @@ namespace CarDrive_1
     {
         private PointF p1, p2;
         private double length;
-        protected static Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
+        protected Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
         protected bool drawing = false;
         //얘네는 숨기고
 
@@ -577,6 +603,11 @@ namespace CarDrive_1
             return true;
         }
 
+        public void setPen(Pen pen)
+        {
+            this.DrawingPen = pen;
+        }
+
         public void draw()
         {
             DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, p1, p2);
@@ -604,8 +635,9 @@ namespace CarDrive_1
     class CheckLine : Line
     {
         double reward = 50;
-        bool activation = false;
-        static Pen ActivatePen = new Pen(new SolidBrush(Color.IndianRed));
+        bool[] activation;
+            
+        
         CheckLine nextLine;
 
         public CheckLine()
@@ -621,6 +653,15 @@ namespace CarDrive_1
             reward = _reward;
         }
 
+        public void setCarnum(int num)
+        {
+            activation = new bool[num];
+            for(int i = 0; i < num; i++)
+            {
+                activation[i] = false;
+            }
+        }
+
         /// <summary>
         /// 다음번 선과 링크
         /// </summary>
@@ -633,19 +674,19 @@ namespace CarDrive_1
         /// <summary>
         /// 이 체크라인 활성화
         /// </summary>
-        public void Activate()
+        public void Activate(int num)
         {
-            activation = true;
+            activation[num] = true;
         }
-        public void unActivate()
+        public void unActivate(int num)
         {
-            activation = false;
+            activation[num] = false;
         }
         
 
-        public bool Crashing(Car car, out CheckLine line, out double _reward)
+        public bool Crashing(Car car, int carnum, out CheckLine line, out double _reward)
         {
-            if (!activation) throw new Exception("활성화되지 않은 라인!");
+            if (activation == null) throw new Exception("활성화되지 않은 라인!");
 
             Line left, right;
             car.car_vertex(out left, out right);
@@ -657,8 +698,8 @@ namespace CarDrive_1
 
             if (b)
             {
-                activation = false;
-                nextLine.activation = true;
+                activation[carnum] = false;
+                nextLine.activation[carnum] = true;
                 line = nextLine;
                 _reward = reward;
                 return true;
@@ -679,14 +720,22 @@ namespace CarDrive_1
             {
                 DoubleBuffering.getinstance().callback_work += delegate ()
                 {
-                    if (activation)
+                    for(int i = 0; i < activation.Length; i++)
                     {
-                        DoubleBuffering.getinstance().getGraphics.DrawLine(ActivatePen, point1, point2);
+                        if (activation[i])
+                        {
+                            DoubleBuffering.getinstance().getGraphics.DrawLine(LineColors.Pens[i], point1, point2);
+                            return;
+                        }
                     }
-                    else
-                    {
+                    //if (activation[0])
+                    //{
+                    //    DoubleBuffering.getinstance().getGraphics.DrawLine(ActivatePen, point1, point2);
+                    //}
+                    //else
+                    //{
                         DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, point1, point2);
-                    }
+                    //}
                 };
             }
         }
@@ -705,6 +754,31 @@ namespace CarDrive_1
         public static double getLength(PointF p1, PointF p2)
         {
             return Math.Sqrt((double)((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));
+        }
+    }
+
+    public static class LineColors
+    {
+        public static Pen[] Pens = new Pen[10];
+        static Color[] colors = new Color[10];
+        
+        static LineColors()
+        {
+            colors[0] = Color.IndianRed;
+            colors[1] = Color.Violet;
+            colors[2] = Color.Yellow;
+            colors[3] = Color.DarkGreen;
+            colors[4] = Color.DarkBlue;
+            colors[5] = Color.Chocolate;
+            colors[6] = Color.Brown;
+            colors[7] = Color.Beige;
+            colors[8] = Color.DarkOrange;
+            colors[9] = Color.White;
+
+            for(int i = 0;i < 10; i++)
+            {
+                Pens[i] = new Pen(new SolidBrush(colors[i]));
+            }
         }
     }
 }

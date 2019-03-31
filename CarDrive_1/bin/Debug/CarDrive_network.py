@@ -25,11 +25,11 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 1024
+        h_size = 256
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
-        w3 = self.build_weights(3, h_size, w1)
+        w3 = self.build_weights(6, h_size, w1)
         w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
 
         self.Predict_Q = tf.matmul(w3, w4)
@@ -44,10 +44,12 @@ class DQN:
 
     def build_weights(self, no, size, input):
         front_w = tf.get_variable("auto_w_1", [size, size], initializer=self.Variable_initializer)
-        layer = tf.nn.relu(tf.matmul(input, front_w))
+        front_b = tf.get_variable("auto_b_1", [size], initializer=self.Variable_initializer)
+        layer = tf.nn.relu(tf.matmul(input, front_w) + front_b)
         for i in range(no):
             w = tf.get_variable("auto_w" + str(i), [size, size], initializer=self.Variable_initializer)
-            new_layer = tf.nn.relu(tf.matmul(layer, w))
+            b = tf.get_variable("auto_b" + str(i), [size], initializer=self.Variable_initializer)
+            new_layer = tf.nn.relu(tf.matmul(layer, w) + b)
             layer = new_layer
 
         return layer
@@ -96,8 +98,8 @@ class Module:
 
     #dqn을 훈련시키는 코드
     def replay_train(self):
-        replaytime = 5
-        batch_size = 150
+        replaytime = 3
+        batch_size = 300
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
 
@@ -143,7 +145,7 @@ class Module:
 
         action = []
         e = 0.9 / ((self.play_count / 3) + 1)
-        randid = np.random.rand(self.numofcar)
+        randid = np.random.rand(len(self.state))
 
         if self.play_count * 3 < self.output_size:  #초반 앞으로좀 가게 하기 위한 장치
             bound = self.play_count * 3
@@ -151,7 +153,7 @@ class Module:
             bound = self.output_size
 
         predict = self.dqn.predict(self.state)
-        for i in range(self.numofcar):
+        for i in range(len(self.state)):
             if randid[i] < e:
                 a = np.random.rand(1) * bound
                 action.append(int(a[0] % self.output_size))
@@ -161,10 +163,13 @@ class Module:
         next_state, self.reward, self.Done = self.step(action)
 
         self.replay_buffer.append((self.state, action, self.reward, next_state, self.Done))
+        if(next_state == None): return
         n_state = next_state[:]
-        for i in range(self.numofcar):
+        n = 0
+        for i in range(len(n_state)):
             if self.Done[i]:
-                n_state.pop(i)
+                n_state.pop(i - n)
+                n += 1
 
         self.state = n_state
 
@@ -179,7 +184,7 @@ class Module:
         #if self.step_count > 9999999:
            # self.Reset()
 
-        if not self.state:
+        if not n_state:
             self.Reset()
 
         #if self.play_count > 1000:
@@ -188,8 +193,6 @@ class Module:
     #C#과 통신
     def step(self, next_move):
         state, reward, Done = self.CarDrive.Move(next_move)
-        #if(next_move == 2): print("2")
-        #if(next_move == 5): print("5")
         return state, reward, Done
 
     def Reset(self):
@@ -227,6 +230,7 @@ class CConnecter:
 
         ans = self.Cmodule.Request_Move(onehot)
 
+
         state = []
         reward = []
         Done = []
@@ -253,7 +257,7 @@ class CConnecter:
 
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(1, 6, 9)
+module = Module(5, 6, 9)
 module.trainstart()
 
 
