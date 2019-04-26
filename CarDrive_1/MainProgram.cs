@@ -13,7 +13,7 @@ namespace CarDrive_1
         List<Car> Full_Carlist = null;
         List<Car> Active_Carlist = null;
         WinFormlib.Threading_Timer_v0 worker = null;
-        double total_reward = 0;
+        double[] total_reward;
         int play_count = 0;
         bool running = false;
         public static int carnum = 0;
@@ -22,6 +22,7 @@ namespace CarDrive_1
 
         public static System.Drawing.Font font = new System.Drawing.Font("휴먼편지체", 15);
         public static System.Drawing.Brush brush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
+        
 
         public delegate void work_thread_Handler(Car car, int carnum);
         public static work_thread_Handler callback_worker;
@@ -29,11 +30,19 @@ namespace CarDrive_1
         void Draw_totalReward()
         {
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                "Reset to 'R'", font, brush, 300, 300);
+                "Reset to 'R'", font, brush, 250, 300);
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                "Reward : " + total_reward.ToString("###. ##"), font, brush, 550, 300);
+                "play : " + play_count, font, brush, 380, 250);
+
             WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                "play : " + play_count, font, brush, 440, 250);
+                "Reward : ", font, brush, 490, 300);
+
+            int height = 300 - carnum / 2 * 17;
+            for(int i =0;i < carnum; i++)
+            {
+                WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
+                     total_reward[i].ToString("###. ##"), font, LineColors.brushes[i], 550, height + i * 17);
+            }
         }
 
         public MainProgram(Form1 form)
@@ -61,6 +70,7 @@ namespace CarDrive_1
         public void AddCar(int Carnum = 1)
         {
             carnum = Carnum;
+            total_reward = new double[carnum];
             map.setCarnum(carnum);
             lock (Carlist_locker)
             {
@@ -89,6 +99,10 @@ namespace CarDrive_1
                     car.setDegree(map.getStartDegree());
                 }
             }
+            for (int i = 0; i < carnum; i++)
+            {
+                total_reward[i] = 0;
+            }
         }
         public void playcount(int count)
         {
@@ -105,7 +119,7 @@ namespace CarDrive_1
                     Active_Carlist.Add(c);
                 }
             }
-            total_reward = 0;
+            
             SetCar();
             map.Reset();
 
@@ -256,11 +270,9 @@ namespace CarDrive_1
                     // t[1] = degree;
                     distance.CopyTo(dbs, 1);
                     //if (max_reward < reward)
-                        //max_reward = reward;
-                    if(no == 0)
-                    {
-                        //this.total_reward += reward;
-                    }
+                    //max_reward = reward;
+                    total_reward[Active_Carlist[no].carnum] += reward;
+
                     Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(dbs, reward, done);
                     anslist[i] = ans;
                 }

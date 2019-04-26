@@ -760,13 +760,14 @@ namespace CarDrive_1
     public static class LineColors
     {
         public static Pen[] Pens = new Pen[10];
-        static Color[] colors = new Color[10];
+        public static Color[] colors = new Color[10];
+        public static Brush[] brushes = new SolidBrush[10];
         
         static LineColors()
         {
             colors[0] = Color.IndianRed;
-            colors[1] = Color.Violet;
-            colors[2] = Color.Yellow;
+            colors[1] = Color.DarkViolet;
+            colors[2] = Color.YellowGreen;
             colors[3] = Color.DarkGreen;
             colors[4] = Color.DarkBlue;
             colors[5] = Color.Chocolate;
@@ -777,6 +778,7 @@ namespace CarDrive_1
 
             for(int i = 0;i < 10; i++)
             {
+                brushes[i] = new SolidBrush(colors[i]);
                 Pens[i] = new Pen(new SolidBrush(colors[i]));
             }
         }

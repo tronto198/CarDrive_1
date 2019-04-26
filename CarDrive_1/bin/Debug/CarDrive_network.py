@@ -257,7 +257,7 @@ class CConnecter:
 
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(5, 6, 9)
+module = Module(5, 9, 9)
 module.trainstart()
 
 
