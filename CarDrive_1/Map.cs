@@ -22,7 +22,8 @@ namespace CarDrive_1
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
         const double Crashreward = -20;
-        const double Bonusreward = 200;
+        public const double reward = 100;
+        const double Bonusreward = reward * 4;
         int carnum = 0;
         Line CenterLine;
         int count = 0;
@@ -350,7 +351,7 @@ namespace CarDrive_1
 
                 if(pointslist.Count == 0)
                 {
-                    distances[i] = -1;
+                    distances[i] = l.Length;
                     continue;
                 }
                 double d = m.getLength(l.point1, pointslist[0]);
@@ -634,7 +635,7 @@ namespace CarDrive_1
 
     class CheckLine : Line
     {
-        double reward = 50;
+        double reward = Map.reward;
         bool[] activation;
             
         

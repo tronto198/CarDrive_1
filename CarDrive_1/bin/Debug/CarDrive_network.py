@@ -64,13 +64,15 @@ class DQN:
 
 class Module:
     def __init__(self, numofcar, in_size, out_size):
+        self.stepterm = 0.02  #20ms
+
         self.numofcar = numofcar
         self.input_size = in_size
         self.output_size = out_size
 
         self.session = tf.Session()
-        self.dis = 0.6
-        self.R_Memory = 1000000
+        self.dis = 0.8
+        self.R_Memory = 5000000
         self.play_count = 0
         self.step_count = 0
 
@@ -137,7 +139,7 @@ class Module:
 
         while self.CarDrive.Run:
             self.select_action()
-            time.sleep(0.01) #10ms
+            time.sleep(self.stepterm)
 
     #실제 실행되는 코드 - 액션을 선택하고 결과를 리턴받음
     def select_action(self):

@@ -215,6 +215,7 @@ namespace CarDrive_1
         public Tuple<double[], double, bool>[] Request_Move(int[] moveno)//int[] move_onehot)
         {
             //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
+
             /*int moveno = 0;
             for(int i = 0; i < 9;i++)
             {
@@ -244,7 +245,7 @@ namespace CarDrive_1
                 {
                     //System.Windows.Forms.MessageBox.Show(i+" " + Active_Carlist.Count);
 
-                    double[] dbs = new double[6];
+                    double[] dbs = new double[9];
                     int no = i - n;
                     double reward;
                     bool done;
@@ -255,23 +256,27 @@ namespace CarDrive_1
 
 
                     dbs[0] = Active_Carlist[no].getv();
-                    //degree = Carlist[0].getdegree();
+                    dbs[1] = Active_Carlist[no].getx();
+                    dbs[2] = Active_Carlist[no].gety();
+                    dbs[3] = Active_Carlist[0].getdegree();
                     distance = Active_Carlist[no].getdistances();
                     reward = Active_Carlist[no].getreward();
                     done = Active_Carlist[no].done;
+
+                    
+
+                    //dbs[i][0] = v;
+                    // t[1] = degree;
+                    distance.CopyTo(dbs, 4);
+                    //if (max_reward < reward)
+                    //max_reward = reward;
+                    total_reward[Active_Carlist[no].carnum] += reward;
 
                     if (done)
                     {
                         n++;
                         Active_Carlist.RemoveAt(no);
                     }
-
-                    //dbs[i][0] = v;
-                    // t[1] = degree;
-                    distance.CopyTo(dbs, 1);
-                    //if (max_reward < reward)
-                    //max_reward = reward;
-                    total_reward[Active_Carlist[no].carnum] += reward;
 
                     Tuple<double[], double, bool> ans = new Tuple<double[], double, bool>(dbs, reward, done);
                     anslist[i] = ans;

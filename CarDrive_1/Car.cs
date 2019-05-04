@@ -90,6 +90,8 @@ namespace CarDrive_1
             reward = 0;
             return r;
         }
+        public double getx() { return x; }
+        public double gety() { return y; }
 
         public void setSize()
         {
@@ -168,13 +170,13 @@ namespace CarDrive_1
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
             g.ResetTransform();
 
-            //Font font = new Font("휴먼편지체", 8);
-            //for(int i = 0;i < 5; i++)
-            //{
-            //    g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
-            //        (float)x - center.Y - 30, (float)y - 15 * 2 + 15 * i);
+            Font font = new Font("휴먼편지체", 8);
+            for (int i = 0; i < 5; i++)
+            {
+                g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
+                    (float)x - center.Y - 30, (float)y - 15 * 2 + 15 * i);
 
-            //}
+            }
         }
         
         //차를 어떻게 움직일지 입력
