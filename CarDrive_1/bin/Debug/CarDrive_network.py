@@ -64,14 +64,14 @@ class DQN:
 
 class Module:
     def __init__(self, numofcar, in_size, out_size):
-        self.stepterm = 0.02  #20ms
+        self.stepterm = 0.01  #10ms
 
         self.numofcar = numofcar
         self.input_size = in_size
         self.output_size = out_size
 
         self.session = tf.Session()
-        self.dis = 0.8
+        self.dis = 0.75
         self.R_Memory = 5000000
         self.play_count = 0
         self.step_count = 0
@@ -100,8 +100,8 @@ class Module:
 
     #dqn을 훈련시키는 코드
     def replay_train(self):
-        replaytime = 3
-        batch_size = 300
+        replaytime = 4
+        batch_size = 400
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
 
