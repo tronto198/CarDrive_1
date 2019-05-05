@@ -21,9 +21,9 @@ namespace CarDrive_1
         int x, y;
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
-        const double Crashreward = -30;
-        public const double reward = 200;
-        const double Bonusreward = reward * 4;
+        const double Crashreward = -300;
+        public const double reward = 800;
+        const double Bonusreward = reward * 3;
         int carnum = 0;
         Line CenterLine;
         int count = 0;
@@ -226,7 +226,7 @@ namespace CarDrive_1
         /// <param name="car">검사할 차</param>
         public void check(Car car, int carnum)
         {
-            car.reward = car.getv() / 30 - 0.3;
+            car.reward = car.getv() / 10 - 0.2;
             //트랙에 충돌되는지
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?

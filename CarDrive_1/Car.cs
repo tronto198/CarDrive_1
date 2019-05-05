@@ -11,35 +11,11 @@ using System.Windows.Forms;
 
 namespace CarDrive_1
 {
-    //class TimerExample
-    //{
-    //    public void Timer()
-    //    {
-    //        var autoEvent = new AutoResetEvent(false);
-    //        var statusChecker = new StatusChecker(10);
-    //        var stateTimer = new Timer(statusChecker.CheckStatus, autoEvent, 1000, 250);
-
-    //    }
-    //}
-    //class StatusChecker
-    //{
-    //    private int invokeCount;
-    //    private int maxCount;
-    //    public StatusChecker(int count)
-    //    {
-    //        invokeCount = 0;
-    //        maxCount = count;
-    //    }
-    //    public void CheckStatus(object stateInfo)
-    //    {
-    //        AutoResetEvent autoEvent = (AutoResetEvent)stateInfo;
-            
-    //    }
-    //}
+    
     public class Car
     {
         const double accel = 0.09;
-        const double max_velocity = 15.5;
+        public const double max_velocity = 15.5;
         double velocity = 0.0;
         double turn_max_velocity = 3;
         const double stop_friction = 0.1;
@@ -170,13 +146,13 @@ namespace CarDrive_1
             d.getGraphics.DrawImage(img, -center.X, -center.Y);
             g.ResetTransform();
 
-            Font font = new Font("휴먼편지체", 8);
-            for (int i = 0; i < 5; i++)
-            {
-                g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
-                    (float)x - center.Y - 30, (float)y - 15 * 2 + 15 * i);
+            //Font font = new Font("휴먼편지체", 8);
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    g.DrawString(distances[i].ToString("##. ###"), font, MainProgram.brush,
+            //        (float)x - center.Y - 30, (float)y - 15 * 2 + 15 * i);
 
-            }
+            //}
         }
         
         //차를 어떻게 움직일지 입력

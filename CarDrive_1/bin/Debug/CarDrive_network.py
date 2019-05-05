@@ -180,7 +180,7 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % 600 == 0:
+        if self.step_count % (600 + self.play_count * 10) == 0:
             self.replay_train()
 
         #if self.step_count > 9999999:
@@ -259,7 +259,7 @@ class CConnecter:
 
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(5, 9, 9)
+module = Module(5, 6, 9)
 module.trainstart()
 
 

@@ -214,7 +214,8 @@ namespace CarDrive_1
 
         public Tuple<double[], double, bool>[] Request_Move(int[] moveno)//int[] move_onehot)
         {
-            //속도, 각도, 거리1, 2, 3, 4, 5, reward, done;
+            //속도, 거리1, 2, 3, 4, 5, reward, done;
+            //위치, 각도
 
             /*int moveno = 0;
             for(int i = 0; i < 9;i++)
@@ -230,6 +231,17 @@ namespace CarDrive_1
             //double v;
             //double degree;
             //double max_reward = 0;
+
+            double normalization_v(double v)
+            {
+                return v / Car.max_velocity * 10;
+            }
+
+            double normalization_dis(double dis)
+            {
+                return dis / 300 * 10;
+            }
+
             Tuple<double[], double, bool>[] anslist;
             int n = 0;
             lock (Carlist_locker)
@@ -245,7 +257,7 @@ namespace CarDrive_1
                 {
                     //System.Windows.Forms.MessageBox.Show(i+" " + Active_Carlist.Count);
 
-                    double[] dbs = new double[9];
+                    double[] dbs = new double[6];
                     int no = i - n;
                     double reward;
                     bool done;
@@ -255,21 +267,19 @@ namespace CarDrive_1
                     callback_worker(Active_Carlist[no], Active_Carlist[no].carnum);
 
 
-                    dbs[0] = Active_Carlist[no].getv();
-                    dbs[1] = Active_Carlist[no].getx();
-                    dbs[2] = Active_Carlist[no].gety();
-                    dbs[3] = Active_Carlist[0].getdegree();
+                    dbs[0] = normalization_v( Active_Carlist[no].getv() );
+                    //dbs[1] = Active_Carlist[no].getx();
+                    //dbs[2] = Active_Carlist[no].gety();
+                    //dbs[3] = Active_Carlist[0].getdegree();
                     distance = Active_Carlist[no].getdistances();
                     reward = Active_Carlist[no].getreward();
                     done = Active_Carlist[no].done;
 
-                    
-
-                    //dbs[i][0] = v;
-                    // t[1] = degree;
-                    distance.CopyTo(dbs, 4);
-                    //if (max_reward < reward)
-                    //max_reward = reward;
+                    for(int j = 0; j < 5; j++)
+                    {
+                        distance[j] = normalization_dis(distance[j]);
+                    }
+                    distance.CopyTo(dbs, 1);
                     total_reward[Active_Carlist[no].carnum] += reward;
 
                     if (done)
