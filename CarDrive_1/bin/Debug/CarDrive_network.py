@@ -72,7 +72,7 @@ class Module:
 
         self.session = tf.Session()
         self.dis = 0.75
-        self.R_Memory = 5000000
+        self.R_Memory = 500000
         self.play_count = 0
         self.step_count = 0
 
@@ -100,8 +100,8 @@ class Module:
 
     #dqn을 훈련시키는 코드
     def replay_train(self):
-        replaytime = 4
-        batch_size = 400
+        replaytime = 3
+        batch_size = 1000
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
 
@@ -180,7 +180,7 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % (600 + self.play_count * 10) == 0:
+        if self.step_count % (600 + self.play_count * 50) == 0:
             self.replay_train()
 
         #if self.step_count > 9999999:

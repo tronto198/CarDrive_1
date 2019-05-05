@@ -130,23 +130,11 @@ namespace CarDrive_1
             return running;
         }
 
-        //파이선 스레드에서 move후에 threadworker실행 XX
-        //나중에 파이썬 쓰레드에서 실행, 또는 C# 테스트용 스레드에서 실행
-        //취소 -> 안쓸예정
-        //public void Thread_worker()
-        //{
-        //    foreach (Car car in Carlist)
-        //    {
-        //        //callback_worker(car);
-                
-        //    }
-
-        //}
 
         //이 프로그램을 C#으로 테스트할때 실행
         public void TestwithKeyinput()
         {
-            AddCar(3);
+            AddCar(1);
             WinFormlib.Key_input.Key_in += delegate (System.Windows.Forms.Keys key)
             {
                 if(key == System.Windows.Forms.Keys.R)
