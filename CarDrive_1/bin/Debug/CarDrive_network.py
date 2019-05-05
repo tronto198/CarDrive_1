@@ -25,7 +25,7 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 256
+        h_size = 128
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
@@ -100,7 +100,7 @@ class Module:
 
     #dqn을 훈련시키는 코드
     def replay_train(self):
-        replaytime = 3
+        replaytime = 4
         batch_size = 1000
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
@@ -180,7 +180,7 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % (600 + self.play_count * 50) == 0:
+        if self.step_count % (600 + self.play_count * 0) == 0:
             self.replay_train()
 
         #if self.step_count > 9999999:
