@@ -23,6 +23,7 @@ class DQN:
 
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
+        self.X_gb = tf.placeholder(tf.float32, [None, self.input_size + 1])
         self.Y_gb = tf.placeholder(tf.float32, [None, 3])
         self.Y_lr = tf.placeholder(tf.float32, [None, 3])
         h_size = 128
@@ -35,7 +36,7 @@ class DQN:
         gb = self.build_weight("GB", [h_size, h_size / 2], w4)
         gb2 = self.build_weight("GB2", [h_size / 2, h_size / 2], gb)
 
-        w11 = self.build_weight("W11", [self.input_size + 1, h_size], self.X)
+        w11 = self.build_weight("W11", [self.input_size + 1, h_size], self.X_gb)
         w22 = self.build_weights("w22", 3, h_size, w11)
         w33 = tf.get_variable("W33", [h_size, h_size], initializer=self.Variable_initializer)
         w44 = tf.matmul(w22, w33)
@@ -77,7 +78,7 @@ class DQN:
 
         return layer
 
-    def predict_gb(self, m, lr):
+    def predict_gb(self, m, lr = -1):
         #mm = np.hstack((m, lr))
         return self.session.run(self.Predict_gb, feed_dict={self.X: m})
 
@@ -145,10 +146,11 @@ class Module:
             #print(trainbatch[0])
 
             for state, action, reward, next_state, done in trainbatch:
-                Q_gb = self.dqn.predict_gb(state)
                 Q_lr = self.dqn.predict_lr(state)
-                predict_gb = np.max(self.dqn.predict_gb(next_state), 1)
+                Q_gb = self.dqn.predict_gb(state)
                 predict_lr = np.max(self.dqn.predict_lr(next_state), 1)
+                predict_gb = np.max(self.dqn.predict_gb(next_state), 1)
+
                 for i in range(len(Q_gb)):
                     a = action[i]
                     if done[i]:
@@ -184,7 +186,7 @@ class Module:
     def select_action(self):
         #숫자 하나 내보내고, 숫자[3 / 3], reward, Done 배열 받음
 
-        action = []
+
         e = 0.9 / ((self.play_count / 3) + 1)
         randid = np.random.rand(len(self.state))
 
@@ -193,19 +195,30 @@ class Module:
         else:
             bound = self.output_size
 
-        predict_gb = self.dqn.predict_gb(self.state)
+
         predict_lr = self.dqn.predict_lr(self.state)
-        predict = np.argmax(predict_gb, 1) * 3 + np.argmax(predict_lr, 1)
+        #predict = np.argmax(predict_gb, 1) * 3 + np.argmax(predict_lr, 1)
+        lraction = []
         for i in range(len(self.state)):
             if randid[i] < e:
                 a = np.random.rand(1) * bound
-                action.append(int(a[0] % self.output_size))
+                lraction.append(int(a[0] % self.output_size))
             else:
-                action.append(predict[i])
+                lraction.append(np.argmax(predict_lr[i]))
 
+        predict_gb = self.dqn.predict_gb(self.state, lraction)
+        gbaction = []
+        for i in range(len(self.state)):
+            if randid[i] < e:
+                a = np.random.rand(1) * bound
+                gbaction.append(int(a[0] % self.output_size))
+            else:
+                gbaction.append(np.argmax(predict_gb[i]))
+        action = gbaction * 3 + lraction
         next_state, self.reward, self.Done = self.step(action)
 
         self.replay_buffer.append((self.state, action, self.reward, next_state, self.Done))
+
         if(next_state == None): return
         n_state = next_state[:]
         n = 0
