@@ -41,7 +41,7 @@ namespace CarDrive_1
             for(int i =0;i < carnum; i++)
             {
                 WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                     total_reward[i].ToString("###. ##"), font, LineColors.brushes[i], 650, height + i * 17);
+                     total_reward[i].ToString("###. ##"), font, LineColors.brushes[i], 580, height + i * 17);
             }
         }
 
@@ -204,21 +204,7 @@ namespace CarDrive_1
         {
             //속도, 거리1, 2, 3, 4, 5, reward, done;
             //위치, 각도
-
-            /*int moveno = 0;
-            for(int i = 0; i < 9;i++)
-            {
-                if(move_onehot[i] == 1)
-                {
-                    moveno = i;
-                    break;
-                }
-            }*/
-            //for(int i = 0;i < move_onehot.Length;i++)
-
-            //double v;
-            //double degree;
-            //double max_reward = 0;
+            
 
             double normalization_v(double v)
             {
@@ -261,7 +247,6 @@ namespace CarDrive_1
                     //dbs[3] = Active_Carlist[0].getdegree();
                     distance = Active_Carlist[no].getdistances();
                     reward = Active_Carlist[no].getreward();
-                    done = Active_Carlist[no].done;
 
                     for(int j = 0; j < 5; j++)
                     {
@@ -269,6 +254,14 @@ namespace CarDrive_1
                     }
                     distance.CopyTo(dbs, 1);
                     total_reward[Active_Carlist[no].carnum] += reward;
+
+
+                    done = Active_Carlist[no].done;
+                    if (total_reward[Active_Carlist[no].carnum] < -300)
+                    {
+                        done = true;
+                        reward = -500;
+                    }
 
                     if (done)
                     {

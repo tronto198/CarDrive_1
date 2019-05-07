@@ -11,7 +11,7 @@ import CarDrive_1 as car
 
 from Thread_Timer import Thread_Timer as TT
 from threading import Timer
-
+import threading
 
 class DQN:
     def __init__(self, session, input_size, output_size):
@@ -25,7 +25,7 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 32
+        h_size = 64
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
@@ -101,7 +101,7 @@ class Module:
     #dqn을 훈련시키는 코드
     def replay_train(self):
         replaytime = 4
-        batch_size = 800
+        batch_size = 400
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
 
@@ -181,6 +181,8 @@ class Module:
         self.step_count += 1
 
         if self.step_count % (600 + self.play_count * 10) == 0:
+            #t = threading.Thread(target=self.replay_train)
+            #t.start()
             self.replay_train()
 
         #if self.step_count > 9999999:
