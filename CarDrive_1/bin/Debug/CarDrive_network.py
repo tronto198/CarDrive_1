@@ -14,61 +14,92 @@ from threading import Timer
 
 
 class DQN:
-    def __init__(self, session, input_size, output_size):
+    def __init__(self, session, input_size):
         self.session = session
         self.input_size = input_size
-        self.output_size = output_size
         self.Variable_initializer = tf.contrib.layers.xavier_initializer()
 
         self._build_network()
 
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
-        self.Y = tf.placeholder(tf.float32, [None, self.output_size])
+        self.Y_gb = tf.placeholder(tf.float32, [None, 3])
+        self.Y_lr = tf.placeholder(tf.float32, [None, 3])
         h_size = 128
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
-        w3 = self.build_weights(6, h_size, w1)
-        w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
+        w2 = self.build_weights("w2", 3, h_size, w1)
+        w3 = tf.get_variable("W3", [h_size, h_size], initializer=self.Variable_initializer)
+        w4 = tf.matmul(w2, w3)
+        gb = self.build_weight("GB", [h_size, h_size / 2], w4)
+        gb2 = self.build_weight("GB2", [h_size / 2, h_size / 2], gb)
 
-        self.Predict_Q = tf.matmul(w3, w4)
+        w11 = self.build_weight("W11", [self.input_size + 1, h_size], self.X)
+        w22 = self.build_weights("w22", 3, h_size, w11)
+        w33 = tf.get_variable("W33", [h_size, h_size], initializer=self.Variable_initializer)
+        w44 = tf.matmul(w22, w33)
+        lr = self.build_weight("LR", [h_size, h_size / 2], w44)
+        lr2 = self.build_weight("LR2", [h_size / 2, h_size / 2], lr)
 
-        self.loss_function = tf.reduce_mean(tf.square(self.Y - self.Predict_Q))
-        self.train = tf.train.AdamOptimizer(learning_rate=l_rate).minimize(self.loss_function)
+        gb_last = tf.get_variable("gb_l", [h_size / 2, 3], initializer=self.Variable_initializer)
+        lr_last = tf.get_variable("lr_l", [h_size / 2, 3], initializer=self.Variable_initializer)
+
+        self.Predict_gb = tf.matmul(gb2, gb_last)
+        self.Predict_lr = tf.matmul(lr2, lr_last)
+
+        self.loss_gb = tf.reduce_mean(tf.square(self.Y_gb - self.Predict_gb))
+        self.loss_lr = tf.reduce_mean(tf.square(self.Y_lr - self.Predict_lr))
+
+        self.train_gb = tf.train.AdamOptimizer(learning_rate=l_rate).minimize(self.loss_gb)
+        self.train_lr = tf.train.AdamOptimizer(learning_rate=l_rate).minimize(self.loss_lr)
+        #w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
+
+        #self.Predict_Q = tf.matmul(w4, tokeyinput)
+
+        #self.loss_function = tf.reduce_mean(tf.square(self.Y - self.Predict_Q))
+        #self.train = tf.train.AdamOptimizer(learning_rate=l_rate).minimize(self.loss_function)
 
     def build_weight(self, name, shape, input):
         w = tf.get_variable(name, shape, initializer=self.Variable_initializer)
         layer = tf.nn.relu(tf.matmul(input, w))
         return layer
 
-    def build_weights(self, no, size, input):
-        front_w = tf.get_variable("auto_w_1", [size, size], initializer=self.Variable_initializer)
-        front_b = tf.get_variable("auto_b_1", [size], initializer=self.Variable_initializer)
+    def build_weights(self, name, no, size, input):
+        front_w = tf.get_variable(name + "auto_w_1", [size, size], initializer=self.Variable_initializer)
+        front_b = tf.get_variable(name + "auto_b_1", [size], initializer=self.Variable_initializer)
         layer = tf.nn.relu(tf.matmul(input, front_w) + front_b)
         for i in range(no):
-            w = tf.get_variable("auto_w" + str(i), [size, size], initializer=self.Variable_initializer)
-            b = tf.get_variable("auto_b" + str(i), [size], initializer=self.Variable_initializer)
+            w = tf.get_variable(name + "auto_w" + str(i), [size, size], initializer=self.Variable_initializer)
+            b = tf.get_variable(name + "auto_b" + str(i), [size], initializer=self.Variable_initializer)
             new_layer = tf.nn.relu(tf.matmul(layer, w) + b)
             layer = new_layer
 
         return layer
 
-    def predict(self, m):
-        return self.session.run(self.Predict_Q, feed_dict={self.X: m})
+    def predict_gb(self, m, lr):
+        #mm = np.hstack((m, lr))
+        return self.session.run(self.Predict_gb, feed_dict={self.X: m})
 
-    def update(self, x_stack, y_stack):
-        return self.session.run([self.loss_function, self.train],
-                                feed_dict={self.X: x_stack, self.Y: y_stack})
+    def predict_lr(self, m):
+        return self.session.run(self.Predict_lr, feed_dict={self.X: m})
+
+    def update_gb(self, x_stack, y_stack):
+        return self.session.run([self.loss_gb, self.train_gb],
+                                feed_dict={self.X: x_stack, self.Y_gb: y_stack})
+
+    def update_lr(self, x_stack, y_stack):
+        return self.session.run([self.loss_lr, self.train_lr],
+                                feed_dict={self.X: x_stack, self.Y_lr: y_stack})
 
 
 class Module:
-    def __init__(self, numofcar, in_size, out_size):
+    def __init__(self, numofcar, in_size):
         self.stepterm = 0.01  #10ms
 
         self.numofcar = numofcar
         self.input_size = in_size
-        self.output_size = out_size
+        self.output_size = 9
 
         self.session = tf.Session()
         self.dis = 0.75
@@ -92,7 +123,7 @@ class Module:
         #for i in range(self.numofcar):
             #self.alivecar.append(True)
 
-        self.dqn = DQN(self.session, self.input_size, self.output_size)
+        self.dqn = DQN(self.session, self.input_size)
         tf.global_variables_initializer().run(session=self.session)
         #카 드라이브 객체 생성 후 차 갯수 설정
         self.CarDrive = CConnecter(self.numofcar)
@@ -109,22 +140,30 @@ class Module:
             trainbatch = random.sample(self.replay_buffer, batch_size)
 
             x_stack = np.empty(0).reshape(0, self.input_size)
-            y_stack = np.empty(0).reshape(0, self.output_size)
+            y_stack_gb = np.empty(0).reshape(0, 3)
+            y_stack_lr = np.empty(0).reshape(0, 3)
             #print(trainbatch[0])
 
             for state, action, reward, next_state, done in trainbatch:
-                Q = self.dqn.predict(state)
-                predict = np.max(self.dqn.predict(next_state), 1)
-                for i in range(len(Q)):
+                Q_gb = self.dqn.predict_gb(state)
+                Q_lr = self.dqn.predict_lr(state)
+                predict_gb = np.max(self.dqn.predict_gb(next_state), 1)
+                predict_lr = np.max(self.dqn.predict_lr(next_state), 1)
+                for i in range(len(Q_gb)):
+                    a = action[i]
                     if done[i]:
-                        Q[i, action[i]] = reward[i]
+                        Q_gb[i, a // 3] = reward[i]
+                        Q_lr[i, a % 3] = reward[i]
                     else:
-                        Q[i, action[i]] = (1 - self.dis) * reward[i] + self.dis * predict[i]
+                        Q_gb[i, a // 3] = (1 - self.dis) * reward[i] + self.dis * predict_gb[i]
+                        Q_lr[i, a % 3] = (1 - self.dis) * reward[i] + self.dis * predict_lr[i]
 
                 x_stack = np.vstack([x_stack, state])
-                y_stack = np.vstack([y_stack, Q])
-            loss, _ = self.dqn.update(x_stack, y_stack)
-            print("Loss : ", loss)
+                y_stack_gb = np.vstack([y_stack_gb, Q_gb])
+                y_stack_lr = np.vstack([y_stack_lr, Q_lr])
+            loss, _ = self.dqn.update_gb(x_stack, y_stack_gb)
+            loss_l, _ = self.dqn.update_lr(x_stack, y_stack_lr)
+            print("Loss : ", loss, "\n\t", loss_l)
 
         print("Update\n")
 
@@ -143,24 +182,26 @@ class Module:
 
     #실제 실행되는 코드 - 액션을 선택하고 결과를 리턴받음
     def select_action(self):
-        #숫자 하나 내보내고, 숫자[9], reward, Done 배열 받음
+        #숫자 하나 내보내고, 숫자[3 / 3], reward, Done 배열 받음
 
         action = []
         e = 0.9 / ((self.play_count / 3) + 1)
         randid = np.random.rand(len(self.state))
 
-        if self.play_count * 3 < self.output_size:  #초반 앞으로좀 가게 하기 위한 장치
-            bound = self.play_count * 3
+        if (self.play_count + 1) * 3 < self.output_size:  #초반 앞으로좀 가게 하기 위한 장치
+            bound = (self.play_count + 1) * 3
         else:
             bound = self.output_size
 
-        predict = self.dqn.predict(self.state)
+        predict_gb = self.dqn.predict_gb(self.state)
+        predict_lr = self.dqn.predict_lr(self.state)
+        predict = np.argmax(predict_gb, 1) * 3 + np.argmax(predict_lr, 1)
         for i in range(len(self.state)):
             if randid[i] < e:
                 a = np.random.rand(1) * bound
                 action.append(int(a[0] % self.output_size))
             else:
-                action.append(np.argmax(predict[i]))
+                action.append(predict[i])
 
         next_state, self.reward, self.Done = self.step(action)
 
@@ -259,7 +300,7 @@ class CConnecter:
 
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(5, 6, 9)
+module = Module(5, 6) #carnum = 5, inputnum = 6
 module.trainstart()
 
 
