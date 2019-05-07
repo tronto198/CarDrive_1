@@ -101,7 +101,7 @@ class Module:
     #dqn을 훈련시키는 코드
     def replay_train(self):
         replaytime = 4
-        batch_size = 1000
+        batch_size = 800
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
 
@@ -149,8 +149,8 @@ class Module:
         e = 0.9 / ((self.play_count / 3) + 1)
         randid = np.random.rand(len(self.state))
 
-        if self.play_count * 3 < self.output_size:  #초반 앞으로좀 가게 하기 위한 장치
-            bound = self.play_count * 3
+        if (self.play_count + 1) * 3 < self.output_size:  #초반 앞으로좀 가게 하기 위한 장치
+            bound = (self.play_count + 1) * 3
         else:
             bound = self.output_size
 
@@ -180,7 +180,7 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % (600 + self.play_count * 0) == 0:
+        if self.step_count % (600 + self.play_count * 10) == 0:
             self.replay_train()
 
         #if self.step_count > 9999999:
