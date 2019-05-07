@@ -25,11 +25,11 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 128
+        h_size = 32
         l_rate = 0.001
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
-        w3 = self.build_weights(6, h_size, w1)
+        w3 = self.build_weights(4, h_size, w1)
         w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
 
         self.Predict_Q = tf.matmul(w3, w4)
