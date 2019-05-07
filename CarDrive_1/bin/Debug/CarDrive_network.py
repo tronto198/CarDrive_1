@@ -27,7 +27,7 @@ class DQN:
     def _build_network(self):
         self.X = tf.placeholder(tf.float32, [None, self.input_size])
         self.Y = tf.placeholder(tf.float32, [None, self.output_size])
-        h_size = 32
+        h_size = 64
         l_rate = 0.001
 
         with tf.variable_scope(self.name):
