@@ -9,16 +9,18 @@ import clr
 clr.AddReference("CarDrive_1")
 import CarDrive_1 as car
 
+import tensoradmin as ta
 from Thread_Timer import Thread_Timer as TT
-from threading import Timer
+import threading
 
 
 class DQN:
-    def __init__(self, session, input_size, output_size):
+    def __init__(self, session, input_size, name):
         self.session = session
         self.input_size = input_size
-        self.output_size = output_size
+        self.output_size = 9
         self.Variable_initializer = tf.contrib.layers.xavier_initializer()
+        self.name = name
 
         self._build_network()
 
@@ -28,11 +30,12 @@ class DQN:
         h_size = 32
         l_rate = 0.001
 
-        w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
-        w3 = self.build_weights(4, h_size, w1)
-        w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
+        with tf.variable_scope(self.name):
+            w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
+            w3 = self.build_weights(4, h_size, w1)
+            w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
 
-        self.Predict_Q = tf.matmul(w3, w4)
+            self.Predict_Q = tf.matmul(w3, w4)
 
         self.loss_function = tf.reduce_mean(tf.square(self.Y - self.Predict_Q))
         self.train = tf.train.AdamOptimizer(learning_rate=l_rate).minimize(self.loss_function)
@@ -77,7 +80,7 @@ class Module:
         self.step_count = 0
 
         #self.trainer = None
-        self.dqn = None
+        self.main_dqn = None
         self.CarDrive = None
         self.replay_buffer = deque()
 
@@ -92,8 +95,10 @@ class Module:
         #for i in range(self.numofcar):
             #self.alivecar.append(True)
 
-        self.dqn = DQN(self.session, self.input_size, self.output_size)
+        self.main_dqn = DQN(self.session, self.input_size, "main")
+        self.current_dqn = DQN(self.session, self.input_size, "current")
         tf.global_variables_initializer().run(session=self.session)
+        ta.copy_tensors("current", "main")
         #카 드라이브 객체 생성 후 차 갯수 설정
         self.CarDrive = CConnecter(self.numofcar)
         return True
@@ -101,10 +106,11 @@ class Module:
     #dqn을 훈련시키는 코드
     def replay_train(self):
         replaytime = 4
-        batch_size = 800
+        batch_size = 400
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
 
+        print("update start")
         for _ in range(replaytime):
             trainbatch = random.sample(self.replay_buffer, batch_size)
 
@@ -113,8 +119,8 @@ class Module:
             #print(trainbatch[0])
 
             for state, action, reward, next_state, done in trainbatch:
-                Q = self.dqn.predict(state)
-                predict = np.max(self.dqn.predict(next_state), 1)
+                Q = self.main_dqn.predict(state)
+                predict = np.max(self.current_dqn.predict(next_state), 1)
                 for i in range(len(Q)):
                     if done[i]:
                         Q[i, action[i]] = reward[i]
@@ -123,7 +129,7 @@ class Module:
 
                 x_stack = np.vstack([x_stack, state])
                 y_stack = np.vstack([y_stack, Q])
-            loss, _ = self.dqn.update(x_stack, y_stack)
+            loss, _ = self.main_dqn.update(x_stack, y_stack)
             print("Loss : ", loss)
 
         print("Update\n")
@@ -154,7 +160,7 @@ class Module:
         else:
             bound = self.output_size
 
-        predict = self.dqn.predict(self.state)
+        predict = self.current_dqn.predict(self.state)
         for i in range(len(self.state)):
             if randid[i] < e:
                 a = np.random.rand(1) * bound
@@ -181,7 +187,8 @@ class Module:
         self.step_count += 1
 
         if self.step_count % (600 + self.play_count * 10) == 0:
-            self.replay_train()
+            t = threading.Thread(target=self.replay_train)
+            t.start()
 
         #if self.step_count > 9999999:
            # self.Reset()
@@ -206,6 +213,9 @@ class Module:
         if not self.CarDrive.Reset(self.play_count):
             self.CarDrive.Stop()
 
+        copying = ta.copy_tensors("current", "main")
+        self.session.run(copying)
+        ta.save_tensors("save.txt", "main")
         a = []
         for _ in range(self.numofcar):
             a.append(4)

@@ -41,7 +41,7 @@ namespace CarDrive_1
             for(int i =0;i < carnum; i++)
             {
                 WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                     total_reward[i].ToString("###. ##"), font, LineColors.brushes[i], 650, height + i * 17);
+                     total_reward[i].ToString("###. ##"), font, LineColors.brushes[i], 580, height + i * 17);
             }
         }
 
@@ -261,7 +261,6 @@ namespace CarDrive_1
                     //dbs[3] = Active_Carlist[0].getdegree();
                     distance = Active_Carlist[no].getdistances();
                     reward = Active_Carlist[no].getreward();
-                    done = Active_Carlist[no].done;
 
                     for(int j = 0; j < 5; j++)
                     {
@@ -270,6 +269,8 @@ namespace CarDrive_1
                     distance.CopyTo(dbs, 1);
                     total_reward[Active_Carlist[no].carnum] += reward;
 
+                    done = Active_Carlist[no].done;
+                    if (total_reward[Active_Carlist[no].carnum] < -1000) done = true;
                     if (done)
                     {
                         n++;
