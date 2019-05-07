@@ -41,7 +41,7 @@ namespace CarDrive_1
             for(int i =0;i < carnum; i++)
             {
                 WinFormlib.DoubleBuffering.getinstance().getGraphics.DrawString(
-                     total_reward[i].ToString("###. ##"), font, LineColors.brushes[i], 650, height + i * 17);
+                     total_reward[i].ToString("###. ##"), font, LineColors.brushes[i], 580, height + i * 17);
             }
         }
 

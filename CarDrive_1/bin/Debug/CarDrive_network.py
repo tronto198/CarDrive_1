@@ -14,10 +14,10 @@ from threading import Timer
 
 
 class DQN:
-    def __init__(self, session, input_size, output_size):
+    def __init__(self, session, input_size):
         self.session = session
         self.input_size = input_size
-        self.output_size = output_size
+        self.output_size = 6
         self.Variable_initializer = tf.contrib.layers.xavier_initializer()
 
         self._build_network()
@@ -30,9 +30,11 @@ class DQN:
 
         w1 = self.build_weight("W1", [self.input_size, h_size], self.X)
         w3 = self.build_weights(6, h_size, w1)
-        w4 = tf.get_variable("W4", [h_size, self.output_size], initializer=self.Variable_initializer)
+        w4 = tf.get_variable("W4", [h_size, 6], initializer=self.Variable_initializer)
+        w5 = tf.matmul(w3, w4)
 
-        self.Predict_Q = tf.matmul(w3, w4)
+
+        self.Predict_Q = w5
 
         self.loss_function = tf.reduce_mean(tf.square(self.Y - self.Predict_Q))
         self.train = tf.train.AdamOptimizer(learning_rate=l_rate).minimize(self.loss_function)
@@ -63,12 +65,12 @@ class DQN:
 
 
 class Module:
-    def __init__(self, numofcar, in_size, out_size):
+    def __init__(self, numofcar, in_size):
         self.stepterm = 0.01  #10ms
 
         self.numofcar = numofcar
         self.input_size = in_size
-        self.output_size = out_size
+        self.output_size = 6
 
         self.session = tf.Session()
         self.dis = 0.75
@@ -92,7 +94,7 @@ class Module:
         #for i in range(self.numofcar):
             #self.alivecar.append(True)
 
-        self.dqn = DQN(self.session, self.input_size, self.output_size)
+        self.dqn = DQN(self.session, self.input_size)
         tf.global_variables_initializer().run(session=self.session)
         #카 드라이브 객체 생성 후 차 갯수 설정
         self.CarDrive = CConnecter(self.numofcar)
@@ -113,13 +115,18 @@ class Module:
             #print(trainbatch[0])
 
             for state, action, reward, next_state, done in trainbatch:
+
                 Q = self.dqn.predict(state)
                 predict = np.max(self.dqn.predict(next_state), 1)
                 for i in range(len(Q)):
+                    act_gb = action[i] // 3
+                    act_lr = action[i] % 3 + 3
                     if done[i]:
-                        Q[i, action[i]] = reward[i]
+                        Q[i, act_gb] = reward[i]
+                        Q[i, act_lr] = reward[i]
                     else:
-                        Q[i, action[i]] = (1 - self.dis) * reward[i] + self.dis * predict[i]
+                        Q[i, act_gb] = (1 - self.dis) * reward[i] + self.dis * predict[i]
+                        Q[i, act_lr] = (1 - self.dis) * reward[i] + self.dis * predict[i]
 
                 x_stack = np.vstack([x_stack, state])
                 y_stack = np.vstack([y_stack, Q])
@@ -141,6 +148,11 @@ class Module:
             self.select_action()
             time.sleep(self.stepterm)
 
+    def tokeyinput(self, input):
+        gb = input[:, :3]
+        lr = input[:, 3:]
+        return np.argmax(gb, 1) * 3 + np.argmax(lr, 1)
+
     #실제 실행되는 코드 - 액션을 선택하고 결과를 리턴받음
     def select_action(self):
         #숫자 하나 내보내고, 숫자[9], reward, Done 배열 받음
@@ -154,13 +166,13 @@ class Module:
         else:
             bound = self.output_size
 
-        predict = self.dqn.predict(self.state)
+        predict = self.tokeyinput(self.dqn.predict(self.state))
         for i in range(len(self.state)):
             if randid[i] < e:
                 a = np.random.rand(1) * bound
                 action.append(int(a[0] % self.output_size))
             else:
-                action.append(np.argmax(predict[i]))
+                action.append(predict[i])
 
         next_state, self.reward, self.Done = self.step(action)
 
@@ -211,6 +223,7 @@ class Module:
             a.append(4)
         self.state, self.reward, self.Done = self.step(a)
 
+
 class CConnecter:
     def __init__(self, num):
         self.form = car.Program.ExMain()
@@ -259,7 +272,7 @@ class CConnecter:
 
 
 #form = CarDrive_1.Program.ExMain()
-module = Module(5, 6, 9)
+module = Module(5, 6)
 module.trainstart()
 
 
