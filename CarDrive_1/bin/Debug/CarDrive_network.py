@@ -197,9 +197,7 @@ class Module:
 
         self.step_count += 1
 
-        if self.step_count % (600 + self.play_count * 10) == 0:
-            #t = threading.Thread(target=self.replay_train)
-            #t.start()
+        if self.step_count % (600 + self.play_count * 50) == 0:
             self.replay_train()
 
         #if self.step_count > 9999999:
