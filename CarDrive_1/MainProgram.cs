@@ -257,11 +257,11 @@ namespace CarDrive_1
 
 
                     done = Active_Carlist[no].done;
-                    if (total_reward[Active_Carlist[no].carnum] < -300)
-                    {
-                        done = true;
-                        reward = -500;
-                    }
+                    //if (total_reward[Active_Carlist[no].carnum] < -300)
+                    //{
+                    //    done = true;
+                    //    reward = -500;
+                    //}
 
                     if (done)
                     {

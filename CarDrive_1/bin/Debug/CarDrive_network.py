@@ -12,6 +12,7 @@ import CarDrive_1 as car
 from Thread_Timer import Thread_Timer as TT
 from threading import Timer
 import threading
+import os
 
 class DQN:
     def __init__(self, session, input_size, output_size):
@@ -62,6 +63,7 @@ class DQN:
                                 feed_dict={self.X: x_stack, self.Y: y_stack})
 
 
+
 class Module:
     def __init__(self, numofcar, in_size, out_size):
         self.stepterm = 0.01  #10ms
@@ -93,15 +95,29 @@ class Module:
             #self.alivecar.append(True)
 
         self.dqn = DQN(self.session, self.input_size, self.output_size)
-        tf.global_variables_initializer().run(session=self.session)
+        self.saver = tf.train.Saver(tf.global_variables())
+        self.save_path = "./Model/Variable_savefile.ckpt"
+        self.load()
         #카 드라이브 객체 생성 후 차 갯수 설정
         self.CarDrive = CConnecter(self.numofcar)
         return True
 
+    def save(self):
+        self.saver.save(self.session, self.save_path)
+        print("save\n")
+
+    def load(self):
+        if os.path.isfile(self.save_path):
+            self.saver.restore(self.session, self.save_path)
+            print("load\n")
+        else:
+            tf.global_variables_initializer().run(session=self.session)
+
+
     #dqn을 훈련시키는 코드
     def replay_train(self):
         replaytime = 4
-        batch_size = 400
+        batch_size = 800
         if batch_size > len(self.replay_buffer):
             batch_size = len(self.replay_buffer)
 
@@ -116,9 +132,9 @@ class Module:
                 Q = self.dqn.predict(state)
                 predict = np.max(self.dqn.predict(next_state), 1)
                 for i in range(len(Q)):
-                    if done[i]:
-                        Q[i, action[i]] = reward[i]
-                    else:
+                    #if done[i]:
+                    #    Q[i, action[i]] = reward[i]
+                    #else:
                         Q[i, action[i]] = (1 - self.dis) * reward[i] + self.dis * predict[i]
 
                 x_stack = np.vstack([x_stack, state])
@@ -208,6 +224,7 @@ class Module:
         if not self.CarDrive.Reset(self.play_count):
             self.CarDrive.Stop()
 
+        self.save()
         a = []
         for _ in range(self.numofcar):
             a.append(4)
