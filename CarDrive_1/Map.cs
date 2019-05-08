@@ -21,8 +21,8 @@ namespace CarDrive_1
         int x, y;
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
-        const double Crashreward = -20;
-        public const double reward = 40;
+        const double Crashreward = -10;
+        public const double reward = 60;
         const double Bonusreward = reward * 3;
         int carnum = 0;
         Line CenterLine;
@@ -231,9 +231,7 @@ namespace CarDrive_1
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?
             //각각 다른 함수로 연결
-
-            //차의 양옆 선 둘 필요
-            //모서리 넷이 각각 안에 있는지로 판별
+            
 
             double reward = 0;
 

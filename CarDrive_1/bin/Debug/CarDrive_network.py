@@ -73,7 +73,7 @@ class Module:
         self.output_size = out_size
 
         self.session = tf.Session()
-        self.dis = 0.75
+        self.dis = 0.65
         self.R_Memory = 500000
         self.play_count = 0
         self.step_count = 0
@@ -132,10 +132,11 @@ class Module:
                 Q = self.dqn.predict(state)
                 predict = np.max(self.dqn.predict(next_state), 1)
                 for i in range(len(Q)):
-                    #if done[i]:
-                    #    Q[i, action[i]] = reward[i]
-                    #else:
-                        Q[i, action[i]] = (1 - self.dis) * reward[i] + self.dis * predict[i]
+                    if done[i]:
+                        Q[i, action[i]] = reward[i]
+                    else:
+                        Q[i, action[i]] = self.dis * predict[i] #(1 - self.dis) * reward[i] + \
+
 
                 x_stack = np.vstack([x_stack, state])
                 y_stack = np.vstack([y_stack, Q])
