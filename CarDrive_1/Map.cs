@@ -21,11 +21,27 @@ namespace CarDrive_1
         int x, y;
         int TrackWidth, TrackHeight;
         const int TrackSize = 100;
-        DoubleBuffering Screen;
+        const double Crashreward = -10;
+        public const double reward = 40;
+        const double Bonusreward = reward * 3;
+        int carnum = 0;
         Line CenterLine;
+        int count = 0;
+
+        DoubleBuffering Screen;
         Pen thispen = new Pen(new SolidBrush(Color.Black));
+
         List<CheckLine> Linelist = new List<CheckLine>();
-        CheckLine currentgoal;
+        CheckLine[] currentgoal = null;
+        CheckLine firstgoal = null;
+
+
+        Point Startpoint = new Point();
+        const int Startdegree = 90;
+
+
+        public Point getStartPoint() { return Startpoint; }
+        public int getStartDegree() { return Startdegree; }
 
         public Map()
         {
@@ -56,8 +72,32 @@ namespace CarDrive_1
             //차는 센터라인의 x범위 내에서 y가 일정 범위 내에 잇어야함
             //나머지는 센터라인 양끝점에서 원범위 내에 있는지로 판별
 
+
+            makeCheckLines();
+
+            Startpoint.X = (int)((CenterLine.point1.X + CenterLine.point2.X) / 2 + 80);
+            Startpoint.Y = (int)(CenterLine.point1.Y + half + TrackSize / 2);
+
+        }
+        public void Reset()
+        {
+            for(int i = 0;i < carnum; i++)
+            {
+                currentgoal[i].unActivate(i);
+                firstgoal.Activate(i);
+                currentgoal[i] = firstgoal;
+            }
+            //currentgoal.unActivate();
+            //firstgoal.Activate();
+            //currentgoal = firstgoal;
+        }
+
+        void makeCheckLines()
+        {
+            int half = TrackHeight / 2;
+
             //센터라인 양끝과 중앙, 반원형 1/3, 2/3 지점에 체크라인
-            CheckLine make(CheckLine frontline, Point p1, Point p2, bool plus)
+            CheckLine make(CheckLine frontline, PointF p1, PointF p2, bool plus)
             {
                 int size = TrackSize;
                 if (!plus)
@@ -69,11 +109,11 @@ namespace CarDrive_1
                 c0.setPoint1((p1.X + p2.X) / 2, p1.Y);
                 c0.setPoint2((p1.X + p2.X) / 2, p1.Y + size);
                 frontline.Link(c0);
-                c0.setreward(100);
+                c0.setreward(Bonusreward);
 
                 CheckLine c1 = new CheckLine();
                 c1.setPoint1(p2);
-                c1.setPoint2(p2.X , p2.Y + size);
+                c1.setPoint2(p2.X, p2.Y + size);
                 c0.Link(c1);
 
                 Linelist.Add(c0);
@@ -82,19 +122,20 @@ namespace CarDrive_1
                 return c1;
             }
 
-            CheckLine make_round(CheckLine frontline, Point center, int startdegree, int enddegree)
+            CheckLine make_round(CheckLine frontline, PointF center, int startdegree, int enddegree)
             {
-                double radian_1 = m.to_radian * (startdegree + (enddegree - startdegree) / 3 * 2);
-                double radian_2 = m.to_radian * (startdegree + (enddegree - startdegree) / 3);
+                double radian_1 = m.to_radian * (startdegree + (enddegree - startdegree) / 3);
+                double radian_2 = m.to_radian * (startdegree + (enddegree - startdegree) / 3 * 2);
+
                 CheckLine c0 = new CheckLine();
-                c0.setPoint1((int)(center.X + Math.Sin(radian_1) * half), 
+                c0.setPoint1((int)(center.X + Math.Sin(radian_1) * half),
                     (int)(center.Y + Math.Cos(radian_1) * half));
-                c0.setPoint2((int)(center.X + Math.Sin(radian_1) * (half + TrackSize)), 
+                c0.setPoint2((int)(center.X + Math.Sin(radian_1) * (half + TrackSize)),
                     (int)(center.Y + Math.Cos(radian_1) * (half + TrackSize)));
-                frontline.Link(frontline);
+                frontline.Link(c0);
 
                 CheckLine c1 = new CheckLine();
-                c1.setPoint1((int)(center.X + Math.Sin(radian_2) * half), 
+                c1.setPoint1((int)(center.X + Math.Sin(radian_2) * half),
                     (int)(center.Y + Math.Cos(radian_2) * half));
                 c1.setPoint2((int)(center.X + Math.Sin(radian_2) * (half + TrackSize)),
                     (int)(center.Y + Math.Cos(radian_2) * (half + TrackSize)));
@@ -104,7 +145,7 @@ namespace CarDrive_1
                 Linelist.Add(c1);
 
                 return c1;
-        }
+            }
 
 
             CheckLine lastline = new CheckLine();
@@ -113,25 +154,28 @@ namespace CarDrive_1
 
 
 
-            CheckLine firstline = make(lastline, new Point(CenterLine.point1.X, CenterLine.point1.Y + half),
-                 new Point(CenterLine.point2.X, CenterLine.point2.Y + half), true);
+            firstgoal = make(lastline, new PointF(CenterLine.point1.X, CenterLine.point1.Y + half),
+                 new PointF(CenterLine.point2.X, CenterLine.point2.Y + half), true);
 
-            CheckLine line2 = make_round(firstline, CenterLine.point2, 0, 180);
+            CheckLine line2 = make_round(firstgoal, CenterLine.point2, 0, 180);
             CheckLine line3 = new CheckLine();
             line3.setPoint1(CenterLine.point2.X, CenterLine.point2.Y - half);
             line3.setPoint2(CenterLine.point2.X, CenterLine.point2.Y - half - TrackSize);
             line2.Link(line3);
             Linelist.Add(line3);
 
-            CheckLine line4 = make(line3, new Point(CenterLine.point2.X, CenterLine.point2.Y - half),
-                new Point(CenterLine.point1.X, CenterLine.point1.Y - half), false);
+            CheckLine line4 = make(line3, new PointF(CenterLine.point2.X, CenterLine.point2.Y - half),
+                new PointF(CenterLine.point1.X, CenterLine.point1.Y - half), false);
 
             CheckLine line5 = make_round(line4, CenterLine.point1, 180, 360);
             line5.Link(lastline);
 
+            for(int i = 0;i < carnum; i++)
+            {
 
-            firstline.Activate();
-            currentgoal = firstline;
+            }
+            //firstgoal.Activate();
+            //currentgoal = firstgoal;
 
             Linelist.Add(lastline);
 
@@ -145,27 +189,26 @@ namespace CarDrive_1
         {
             Screen.callback_work += Draw;
         }
-
         void Draw()
         {
             //트랙을 그리는 작업을 함수로 지정
             void work(int Size)     // Size = 양끝 원의 크기(지름 이면서 트랙의 y축 크기)
             {
-                int half = Size / 2;    //반지름, 센터라인에서 위아래의 직선라인까지의 거리
+                double half = Size / 2;    //반지름, 센터라인에서 위아래의 직선라인까지의 거리
 
-                int x1 = CenterLine.point1.X;
-                int y1 = CenterLine.point1.Y;
-                int x2 = CenterLine.point2.X;
-                int y2 = CenterLine.point2.Y;
+                double x1 = CenterLine.point1.X;
+                double y1 = CenterLine.point1.Y;
+                double x2 = CenterLine.point2.X;
+                double y2 = CenterLine.point2.Y;
                 
 
                 //위아래 직선라인 그리기
-                Screen.getGraphics.DrawLine(thispen, x1, y1 - half, x2, y2 - half);
-                Screen.getGraphics.DrawLine(thispen, x1, y1 + half, x2, y2 + half);
+                Screen.getGraphics.DrawLine(thispen, (float)x1, (float)(y1 - half), (float)x2, (float)(y2 - half));
+                Screen.getGraphics.DrawLine(thispen, (float)x1, (float)(y1 + half), (float)x2, (float)(y2 + half));
 
                 //양끝 반원들 그리기
-                Screen.getGraphics.DrawArc(thispen, x1 - half, y1 - half, Size, Size, 90, 180);
-                Screen.getGraphics.DrawArc(thispen, x2 - half, y2 - half, Size, Size, 270, 180);
+                Screen.getGraphics.DrawArc(thispen, (float)(x1 - half), (float)(y1 - half), Size, Size, 90, 180);
+                Screen.getGraphics.DrawArc(thispen, (float)(x2 - half), (float)(y2 - half), Size, Size, 270, 180);
                 
             }
 
@@ -177,28 +220,25 @@ namespace CarDrive_1
             
         }
 
-        
         /// <summary>
         /// 차가 트랙에 닿는지, 포인트를 지났는지 검사
         /// </summary>
         /// <param name="car">검사할 차</param>
-        public void check(Car car)
+        public void check(Car car, int carnum)
         {
+            car.reward = car.getv() / 10 - 0.2;
             //트랙에 충돌되는지
             //세이브 포인트에 도달했는지
             //선으로 얼마나 남앗는지?
             //각각 다른 함수로 연결
+            
 
-            //차의 양옆 선 둘 필요
-            //모서리 넷이 각각 안에 있는지로 판별
-
-            int reward = 0;
-            const int Crashreward = -100;
+            double reward = 0;
 
             
 
             //한 점이 트랙 안에 정상적으로 있는지 판별 (참이면 정상, 거짓이면 충돌)
-            bool checkCrash(Point p)
+            bool checkCrash(PointF p)
             {
                 //센터라인에서부터 half만큼 떨어진 곳이 트랙
                 //추가로 TrackSize만큼 떨어진곳이 트랙의 바깥쪽
@@ -235,7 +275,7 @@ namespace CarDrive_1
                 }
                 else //직선 라인일때
                 {
-                    int abs = Math.Abs(p.Y - y);  //CenterLine과 점과의 거리
+                    float abs = Math.Abs(p.Y - y);  //CenterLine과 점과의 거리
                     return CatchCrash(abs);
                 }
 
@@ -245,40 +285,240 @@ namespace CarDrive_1
             if (currentgoal == null) return;
 
             //차가 세이브 포인트를 넘겼는지 판별
-            if (currentgoal.Crashing(car, out currentgoal, out reward))
+            if (currentgoal[carnum].Crashing(car, carnum, out currentgoal[carnum], out reward))
             {
                 Bonus(car, reward);
             }
 
-            //checkCrash 4번, 보너스 2번 실행
+            //충돌 감지
+            Line left, right;
+            car.car_vertex(out left, out right);
+            if (!checkCrash(left.point1)) Crashed(car, reward);
+            else if (!checkCrash(left.point2)) Crashed(car, reward);
+            else if (!checkCrash(right.point1)) Crashed(car, reward);
+            else if (!checkCrash(right.point2)) Crashed(car, reward);
+
+            //거리 계산
+            Line[] lines = car.getlines();
+            double[] distance = cal_distance(lines);
+            car.setdistance(distance);
 
 
         }
 
-        void Crashed(Car car, int reward)
+        void Crashed(Car car, double reward)
         {
             //차에 함수 만들기
+            if(!car.done)
+                car.reward = reward;
+            car.done = true;
         }
 
-        void Bonus(Car car, int reward)
+        void Bonus(Car car, double reward)
         {
             //차에 함수 만들기
+            car.reward = reward;
         }
 
+        //거리가 닿지 않으면 -1
+        public double[] cal_distance(Line[] lines)
+        {
+            double[] distances = new double[5];
+            int half = TrackHeight / 2;
+            for(int i = 0; i < 5; i++)
+            {
+                Line l = lines[i];
+                List<PointF> pointslist = new List<PointF>();
+                check_circle(CenterLine.point1, half, 90, 180, l, ref pointslist);
+                check_circle(CenterLine.point1, half + TrackSize, 90, 180, l, ref pointslist);
+                check_circle(CenterLine.point2, half, 270, 180, l, ref pointslist);
+                check_circle(CenterLine.point2, half + TrackSize, 270, 180, l, ref pointslist);
 
+                Line trackline = new Line();
+                void cl(int height)
+                {
+                    trackline.setPoint1(CenterLine.point1.X, CenterLine.point1.Y - height);
+                    trackline.setPoint2(CenterLine.point2.X, CenterLine.point2.Y - height);
+                    check_line(trackline, l, ref pointslist);
+                    
+                }
+                cl(half);
+                cl(-half);
+                cl(half + TrackSize);
+                cl(-half - TrackSize);
+
+                if(pointslist.Count == 0)
+                {
+                    distances[i] = l.Length;
+                    continue;
+                }
+                double d = m.getLength(l.point1, pointslist[0]);
+                for(int j = 1; j < pointslist.Count; j++)
+                {
+                    double test_d = m.getLength(l.point1, pointslist[j]);
+                    if(d > test_d)
+                    {
+                        d = test_d;
+                    }
+                }
+                distances[i] = d;
+
+                //DoubleBuffering.getinstance().callback_work += delegate ()
+                //{
+                //    foreach (PointF pf in pointslist)
+                //    {
+                //        DoubleBuffering.getinstance().getGraphics.DrawRectangle(new Pen(MainProgram.brush), pf.X, pf.Y, 3, 3);
+                //    }
+                //};
+            }
+
+            return distances;
+        }
+
+        void check_circle(PointF circle_center, double circle_size, int startdegree, int sweepdegree, Line line, ref List<PointF> list)
+        {
+            double a = (line.point1.Y - line.point2.Y) * (line.point1.Y - line.point2.Y)
+                + (line.point1.X - line.point2.X) * (line.point1.X - line.point2.X);
+            double b_half = (line.point1.X - line.point2.X) * (line.point2.X - circle_center.X)
+                + (line.point1.Y - line.point2.Y) * (line.point2.Y - circle_center.Y);
+            double c = (line.point2.X * line.point2.X - 2 * (line.point2.X * circle_center.X) 
+                + circle_center.X * circle_center.X) + (line.point2.Y * line.point2.Y 
+                - 2 * (line.point2.Y * circle_center.Y) + circle_center.Y * circle_center.Y)
+                 - circle_size * circle_size;
+            
+
+            if(a == 0)
+            {
+                //line이 점
+                return;
+            }
+
+            double dis = b_half * b_half - a * c;
+            if(dis < 0)
+            {
+                //교점 없음
+                return;
+            }
+
+            double t1 = (-b_half + Math.Sqrt(dis)) / a;
+            double t2 = (-b_half - Math.Sqrt(dis)) / a;
+
+
+
+
+            double degreeset(double d)
+            {
+                if (d < 0)
+                {
+                    while(d < 0) d += 360;
+                }
+                else if (d > 360)
+                {
+                    while(d > 360) d -= 360;
+                }
+                return d;
+            }
+
+            double cal_degree(double dx, double dy)
+            {
+                double d = Math.Atan(dx / dy) * m.to_degree + 90;
+                if (dy > 0) d += 180;
+                d = degreeset(d);
+                
+                return d;
+            }
+
+            bool check_degree(double degree)
+            {
+                double start_d = degreeset(startdegree);
+                double end_d = degreeset(startdegree + sweepdegree);
+                
+                if(end_d < start_d)
+                {
+                    if(degree < end_d || degree > start_d)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if(start_d < degree && degree < end_d)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+
+
+
+            if(t1 < 0 || t1 > 1)
+            {
+                //t1이 선분 바깥
+            }
+            else
+            {
+                PointF p1 = new PointF((float)(t1 * line.point1.X + (1 - t1) * line.point2.X),
+                    (float)(t1 * line.point1.Y + (1 - t1) * line.point2.Y));
+                double degree1 = cal_degree(p1.X - circle_center.X, p1.Y - circle_center.Y);
+                if(check_degree(degree1)) list.Add(p1);
+            }
+            if (t2 < 0 || t2 > 1)
+            {
+                //t2가 선분 바깥
+            }
+            else
+            {
+                PointF p2 = new PointF((float)(t2 * line.point1.X + (1 - t2) * line.point2.X),
+                    (float)(t2 * line.point1.Y + (1 - t2) * line.point2.Y));
+                double degree2 = cal_degree(p2.X - circle_center.X, p2.Y - circle_center.Y);
+                if (check_degree(degree2)) list.Add(p2);
+            }
+
+
+            return;
+
+        }
+
+        void check_line(Line track, Line line, ref List<PointF> list)
+        {
+            PointF p = new PointF();
+            if(track.CrossLIne(line, ref p))
+            {
+                list.Add(p);
+            }
+            return;
+        }
+
+        public void setCarnum(int carnum)
+        {
+            this.carnum = carnum;
+            currentgoal = new CheckLine[carnum];
+            foreach(CheckLine cl in Linelist)
+            {
+                cl.setCarnum(carnum);
+            }
+            for(int i = 0;i < carnum; i++)
+            {
+                currentgoal[i] = firstgoal;
+                firstgoal.Activate(i);
+            }
+            //Reset();
+        }
     }
 
     //선
-    class Line
+    public class Line
     {
-        private Point p1, p2;
+        private PointF p1, p2;
         private double length;
-        protected static Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
+        protected Pen DrawingPen = new Pen(new SolidBrush(Color.Black));
         protected bool drawing = false;
         //얘네는 숨기고
 
-        public Point point1 { get { return p1; } }
-        public Point point2 { get { return p2; } }
+        public PointF point1 { get { return p1; } }
+        public PointF point2 { get { return p2; } }
         public double Length { get { return length; } }
         //이렇게 하면 함수를 쓰지 않고 읽기 전용으로 가능 
         //함수로 부르지 않고 편하게 쓰고 싶지만 바뀌어서는 안되는 것들을 쓰면 좋은듯?
@@ -289,10 +529,10 @@ namespace CarDrive_1
         /// </summary>
         /// <param name="_x1"></param>
         /// <param name="_y1"></param>
-        public void setPoint1(int _x1, int _y1)
+        public void setPoint1(double _x1, double _y1)
         {
-            p1.X = _x1;
-            p1.Y = _y1;
+            p1.X = (float)_x1;
+            p1.Y = (float)_y1;
             getLength();
         }
 
@@ -300,7 +540,7 @@ namespace CarDrive_1
         /// 첫번째 끝점 지정
         /// </summary>
         /// <param name="p"></param>
-        public void setPoint1(Point p)
+        public void setPoint1(PointF p)
         {
             setPoint1(p.X, p.Y);
         }
@@ -310,10 +550,10 @@ namespace CarDrive_1
         /// </summary>
         /// <param name="_x2"></param>
         /// <param name="_y2"></param>
-        public void setPoint2(int _x2, int _y2)
+        public void setPoint2(double _x2, double _y2)
         {
-            p2.X = _x2;
-            p2.Y = _y2;
+            p2.X = (float)_x2;
+            p2.Y = (float)_y2;
             getLength();
         }
 
@@ -321,7 +561,7 @@ namespace CarDrive_1
         /// 두번째 끝점 지정
         /// </summary>
         /// <param name="p"></param>
-        public void setPoint2(Point p)
+        public void setPoint2(PointF p)
         {
             setPoint2(p.X, p.Y);
         }
@@ -338,7 +578,7 @@ namespace CarDrive_1
 
         //두 선분의 교점 구하기 (여기서는 겹치는지만)
         //출처 : http://www.gisdeveloper.co.kr/?p=89
-        public bool CrossLIne(Line l, ref Point p)
+        public bool CrossLIne(Line l, ref PointF p)
         {
             double t;
             double s;
@@ -357,20 +597,35 @@ namespace CarDrive_1
 
             if (t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0) return false;
             
-            p.X = (int)(p1.X + t * (double)(p2.X - p1.X));
-            p.Y = (int)(p1.Y + t * (double)(p2.Y - p1.Y));
+            p.X = (float)(p1.X + t * (double)(p2.X - p1.X));
+            p.Y = (float)(p1.Y + t * (double)(p2.Y - p1.Y));
             return true;
         }
 
+        public void setPen(Pen pen)
+        {
+            this.DrawingPen = pen;
+        }
+
+        public void draw()
+        {
+            DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, p1, p2);
+        }
         
         public virtual void Show()
         {
             if (!drawing)
             {
-                DoubleBuffering.getinstance().callback_work += delegate ()
-                {
-                    DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, p1, p2);
-                };
+                drawing = true;
+                DoubleBuffering.getinstance().callback_work += draw;
+            }
+        }
+        public virtual void unShow()
+        {
+            if (drawing)
+            {
+                drawing = false;
+                DoubleBuffering.getinstance().callback_work -= draw;
             }
         }
     }
@@ -378,9 +633,10 @@ namespace CarDrive_1
 
     class CheckLine : Line
     {
-        int reward = 10;
-        bool activation = false;
-        static Pen ActivatePen = new Pen(new SolidBrush(Color.Green));
+        double reward = Map.reward;
+        bool[] activation;
+            
+        
         CheckLine nextLine;
 
         public CheckLine()
@@ -391,9 +647,18 @@ namespace CarDrive_1
         /// 보상 설정
         /// </summary>
         /// <param name="_reward">보상값</param>
-        public void setreward(int _reward)
+        public void setreward(double _reward)
         {
             reward = _reward;
+        }
+
+        public void setCarnum(int num)
+        {
+            activation = new bool[num];
+            for(int i = 0; i < num; i++)
+            {
+                activation[i] = false;
+            }
         }
 
         /// <summary>
@@ -408,20 +673,32 @@ namespace CarDrive_1
         /// <summary>
         /// 이 체크라인 활성화
         /// </summary>
-        public void Activate()
+        public void Activate(int num)
         {
-            activation = true;
+            activation[num] = true;
+        }
+        public void unActivate(int num)
+        {
+            activation[num] = false;
         }
         
 
-        public bool Crashing(Car car, out CheckLine line, out int _reward)
+        public bool Crashing(Car car, int carnum, out CheckLine line, out double _reward)
         {
-            if (!activation) throw new Exception("활성화되지 않은 라인!");
+            if (activation == null) throw new Exception("활성화되지 않은 라인!");
 
-            if (false)
+            Line left, right;
+            car.car_vertex(out left, out right);
+            bool b = false;
+            PointF crashedPoint = new PointF();
+            if (left.CrossLIne(this, ref crashedPoint)) b = true;
+            else if (right.CrossLIne(this, ref crashedPoint)) b = true;
+
+
+            if (b)
             {
-                activation = false;
-                nextLine.activation = true;
+                activation[carnum] = false;
+                nextLine.activation[carnum] = true;
                 line = nextLine;
                 _reward = reward;
                 return true;
@@ -432,6 +709,8 @@ namespace CarDrive_1
                 line = this;
                 return false;
             }
+               
+            
         }
 
         public override void Show()
@@ -440,14 +719,22 @@ namespace CarDrive_1
             {
                 DoubleBuffering.getinstance().callback_work += delegate ()
                 {
-                    if (activation)
+                    for(int i = 0; i < activation.Length; i++)
                     {
-                        DoubleBuffering.getinstance().getGraphics.DrawLine(ActivatePen, point1, point2);
+                        if (activation[i])
+                        {
+                            DoubleBuffering.getinstance().getGraphics.DrawLine(LineColors.Pens[i], point1, point2);
+                            return;
+                        }
                     }
-                    else
-                    {
+                    //if (activation[0])
+                    //{
+                    //    DoubleBuffering.getinstance().getGraphics.DrawLine(ActivatePen, point1, point2);
+                    //}
+                    //else
+                    //{
                         DoubleBuffering.getinstance().getGraphics.DrawLine(DrawingPen, point1, point2);
-                    }
+                    //}
                 };
             }
         }
@@ -458,9 +745,41 @@ namespace CarDrive_1
     {
         //degree to radian
         public const double to_radian = Math.PI / 180;
+        public const double to_degree = 180 / Math.PI;
         public static double getLength(Point p1, Point p2)
         {
             return Math.Sqrt((double)((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));
+        }
+        public static double getLength(PointF p1, PointF p2)
+        {
+            return Math.Sqrt((double)((p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y)));
+        }
+    }
+
+    public static class LineColors
+    {
+        public static Pen[] Pens = new Pen[10];
+        public static Color[] colors = new Color[10];
+        public static Brush[] brushes = new SolidBrush[10];
+        
+        static LineColors()
+        {
+            colors[0] = Color.IndianRed;
+            colors[1] = Color.DarkViolet;
+            colors[2] = Color.YellowGreen;
+            colors[3] = Color.DarkGreen;
+            colors[4] = Color.DarkBlue;
+            colors[5] = Color.Chocolate;
+            colors[6] = Color.Brown;
+            colors[7] = Color.Beige;
+            colors[8] = Color.DarkOrange;
+            colors[9] = Color.White;
+
+            for(int i = 0;i < 10; i++)
+            {
+                brushes[i] = new SolidBrush(colors[i]);
+                Pens[i] = new Pen(new SolidBrush(colors[i]));
+            }
         }
     }
 }

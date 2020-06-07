@@ -26,7 +26,7 @@ namespace CarDrive_1
             
             FirstSetting();
 
-            Main_Program = new MainProgram();
+            Main_Program = new MainProgram(this);
                                     
 
             //ShowHelp();
@@ -106,5 +106,16 @@ namespace CarDrive_1
             if (testint++ % 10000 == 0)
                 testint -= 5000;
         }
+        public void link(object obj)
+        {
+            Action a = obj as Action;
+            this.FormClosed += delegate(object sender, FormClosedEventArgs e) { a(); };
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Main_Program.Formclose();
+        }
+        
     }
 }
